@@ -9,12 +9,122 @@ It calculates the area occupied by foreground regions using a weighted neighborh
 ```
 area = bwarea(BW)
 ```
+
+---
 ## Parameters:
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | `BW` | Matrix | **Input:** `2-D` binary image. |
 | `area` | Double | **Output:** Estimated area of all foreground objects in the binary image and may be non-integer. |
+
+---
+## Variable Reference
+
+| Variable         | Scope         | Type             | Description                                                                                                                                                |
+| ---------------- | ------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bw`             | Input / Local | Matrix (Logical) | Input binary image. After preprocessing, all non-zero pixels are converted to foreground (`1`) and zero-valued pixels to background (`0`).                 |
+| `binaryobj_area` | Output        | Double           | Final estimated area of all foreground objects in the binary image.                                                                                        |
+| `four`           | Local         | 2×2 Matrix       | Kernel of ones used to count the number of foreground pixels in each 2×2 neighborhood.                                                                     |
+| `two`            | Local         | 2×2 Matrix       | Diagonal kernel used to distinguish adjacent-pixel configurations from diagonal-pixel configurations.                                                      |
+| `fours`          | Local         | Matrix           | Result of convolution between the binary image and the `four` kernel. Each element represents the number of foreground pixels in a local 2×2 neighborhood. |
+| `twos`           | Local         | Matrix           | Result of convolution between the binary image and the `two` kernel. Used for identifying diagonal configurations.                                         |
+| `Q1`             | Local         | Double           | Number of 2×2 neighborhoods containing exactly one foreground pixel.                                                                                       |
+| `QA`             | Local         | Double           | Number of 2×2 neighborhoods containing exactly two adjacent foreground pixels.                                                                             |
+| `QD`             | Local         | Double           | Number of 2×2 neighborhoods containing exactly two diagonally positioned foreground pixels.                                                                |
+| `Q3`             | Local         | Double           | Number of 2×2 neighborhoods containing exactly three foreground pixels.                                                                                    |
+| `Q4`             | Local         | Double           | Number of 2×2 neighborhoods completely filled with foreground pixels.                                                                                      |
+
+
+---
+## Helper Functions
+
+| Function   | Type     | Purpose                                                                               |
+| ---------- | -------- | ------------------------------------------------------------------------------------- |
+| `argn()`   | Built-in | Determines the number of input arguments supplied to the function.                    |
+| `error()`  | Built-in | Generates an error message and terminates execution when invalid input is detected.   |
+| `ndims()`  | Built-in | Returns the number of dimensions of the input image. Used to ensure the image is 2-D. |
+| `ones()`   | Built-in | Creates the 2×2 kernel of ones used for neighborhood analysis.                        |
+| `double()` | Built-in | Converts the logical image to double precision before convolution.                    |
+| `conv2()`  | Built-in | Performs two-dimensional convolution for pattern detection in 2×2 neighborhoods.      |
+| `sum()`    | Built-in | Counts occurrences of specific neighborhood configurations.                           |
+
+---
+## Algorithm
+
+```text
+┌─────────────────────┐
+│        Start        │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Receive Input Image │
+│         BW          │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Validate Input      │
+│ • One argument      │
+│ • 2-D image         │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Convert Image to    │
+│ Binary Format       │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Define 2×2 Pattern  │
+│ Detection Kernels   │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Perform 2-D         │
+│ Convolution Using   │
+│ Pattern Kernels     │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Analyze Local 2×2   │
+│ Neighborhoods       │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Classify Pattern    │
+│ Types               │
+│ • Q1 (1 pixel)      │
+│ • QA (adjacent 2)   │
+│ • QD (diagonal 2)   │
+│ • Q3 (3 pixels)     │
+│ • Q4 (4 pixels)     │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Compute Weighted    │
+│ Area Estimate       │
+│ Using Pattern       │
+│ Coefficients        │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Return Estimated    │
+│ Binary Object Area  │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│         End         │
+└─────────────────────┘
+```
 
 ---
 ## Time & Space Complexity:
@@ -26,6 +136,128 @@ Space Complexity: O(1)
 ---
 
 
+## Mathematical Foundation
+
+The `bwarea` function estimates the area of foreground objects by analyzing all overlapping 2×2 neighborhoods in a binary image.
+
+### Binary Image Representation
+
+The input image is converted to a binary image:
+
+```text
+B(x,y) ∈ {0,1}
+```
+
+where:
+
+* `0` = background pixel
+* `1` = foreground pixel
+
+---
+
+### Convolution Kernels
+
+Foreground-pixel counting kernel:
+
+```text
+K₁ =
+[1 1
+ 1 1]
+```
+
+Diagonal-pattern detection kernel:
+
+```text
+K₂ =
+[1 0
+ 0 1]
+```
+
+The convolutions
+
+```text
+F = B * K₁
+D = B * K₂
+```
+
+are used to identify local 2×2 pixel configurations.
+
+---
+
+### Neighborhood Counts and Ranges
+
+| Variable | Description                                                       | Range    |
+| -------- | ----------------------------------------------------------------- | -------- |
+| `Q₁`     | Number of neighborhoods containing exactly one foreground pixel   | `Q₁ ≥ 0` |
+| `Qₐ`     | Number of neighborhoods containing two adjacent foreground pixels | `Qₐ ≥ 0` |
+| `Qᵈ`     | Number of neighborhoods containing two diagonal foreground pixels | `Qᵈ ≥ 0` |
+| `Q₃`     | Number of neighborhoods containing three foreground pixels        | `Q₃ ≥ 0` |
+| `Q₄`     | Number of neighborhoods containing four foreground pixels         | `Q₄ ≥ 0` |
+
+For an image of size `M × N`, the maximum possible value of any count is:
+
+```text
+(M + 1)(N + 1)
+```
+
+because the full convolution produces an output of size:
+
+```text
+(M + 1) × (N + 1)
+```
+
+---
+
+### Area Estimation Formula
+
+The estimated area is computed as:
+
+```text
+A = 0.25Q₁ + 0.50Qₐ + 0.75Qᵈ + 0.875Q₃ + Q₄
+```
+
+where:
+
+* `A` = estimated object area
+* `A ≥ 0`
+
+---
+
+### Output Range
+
+For an image containing no foreground pixels:
+
+```text
+A = 0
+```
+
+For a completely foreground image of size `M × N`:
+
+```text
+A = M × N
+```
+
+Therefore:
+
+```text
+0 ≤ A ≤ M × N
+```
+---
+## Difference Between `sum()` and `bwarea()`
+
+Both functions operate on binary images but compute different measurements.
+
+| Function   | Purpose                                                                                      |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| `sum()`    | Counts the number of foreground pixels.                                                      |
+| `bwarea()` | Estimates the geometric area of foreground objects using weighted 2×2 neighborhood analysis. |
+
+Unlike `sum()`, `bwarea()` accounts for object boundaries and diagonal pixel configurations, resulting in a more accurate approximation of the true object area. Consequently, `bwarea()` may return non-integer values.
+
+
+**Recommendation:** Use `sum()` for pixel counting and `bwarea()` for object area estimation.
+
+---
 ## Test Cases:
 
 The following 11 test cases cover all the reuired valid, invalid and boundary cases. Run them after loading the function with `exec('bwarea.sce', -1)`.
@@ -204,7 +436,16 @@ area = bwarea(BW)
 The weighted neighborhood method provides a more accurate estimate of the area than simple foreground-pixel counting, especially along object boundaries.
 
 ---
-  
+
+### Test Results
+
+The file `bwarea_Test_Results.pdf` contains the output images generated for each test case along with the corresponding values of:
+
+* `Area` (computed using `bwarea()`)
+* `Summed Area` (computed using `sum()`)
+
+---
+
 ## Compatibility Notes
 
 This function is a Scilab translation of GNU Octave's `bwarea` function and uses the same weighted 2×2 neighborhood method for area estimation.
@@ -228,6 +469,8 @@ This function is a Scilab translation of GNU Octave's `bwarea` function and uses
 
 * RGB images are not supported directly. Convert the image to grayscale and then to binary before computing the area.
 
+---
+
 ### Recommended Usage
 
 For results comparable to GNU Octave:
@@ -237,6 +480,8 @@ BW = Gray > threshold;
 area = bwarea(BW);
 ```
 where `threshold` is chosen appropriately for the application.
+
+---
 
 ## References
 
