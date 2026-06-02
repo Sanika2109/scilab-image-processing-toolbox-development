@@ -1,63 +1,54 @@
-function equi_hist = histeq(I, L)
+function equi_hist = histeq(Img, numBins)
+    
+    // Ensure input is a grayscale image
+    if ndims(Img) == 3 then
+       Img = rgb2gray(Img);
+    end
 
-   // Set default intensity levels to 256 for 8-bit images
-   if argn(2) < 2 then
-       L = 256;
-   end
+    // Default 64 histogram bins for Octave-like behavior
+    if argn(2) < 2 then
+        numBins = 64;
+    end
 
-   // Convert input image to uint8 format
-   I = uint8(I);
+    // Return empty output for empty input image
+    if isempty(Img) then
+        equi_hist = [];
+        return;
+    end
 
-   // Convert RGB image to grayscale
-   grayscale_img = rgb2gray(I);
+    // Convert image to double precision for computations
+    Img = double(Img);
 
-   // Convert image to double for calculations
-   img = double(grayscale_img);
+    // Get image dimensions
+    [row, col] = size(Img);
 
-   // Get image dimensions
-   [row,col] = size(img);
+    // Find minimum and maximum intensity values
+    minIntensity = min(Img);
+    maxIntensity = max(Img);
 
-   // Total number of pixels
-   pixel_val = row * col;
+    // If all pixels have the same intensity, return the image unchanged
+    if maxIntensity == minIntensity then
+        equi_hist = Img;
+        return;
+    end
 
-   // Scale pixel values to range [0, L−1]
-   img = round(img*(L - 1)/255);
+    // Normalize image intensities to the range [0, 1]
+    normalizedImg = (Img - minIntensity) / (maxIntensity - minIntensity);
 
-   // Initialize histogram array
-   hist = zeros(1, L); 
+    // Assign each pixel to one of the histogram bins
+    binIndices = floor(normalizedImg * (numBins - 1));
 
-   // Compute histogram frequency of pixel intensities
-   for i = 1:row
-     for j = 1:col
-       pixel = img(i,j);
-       hist(pixel + 1) = hist(pixel + 1) + 1;
-     end
-   end  
+    // Compute histogram counts for each bin
+    histCount = zeros(numBins, 1);
 
-   // Compute cumulative histogram (CDF)
-   cumm_hist = cumsum(hist);
+    for bin = 0:numBins-1
+        histCount(bin + 1) = sum(binIndices == bin);
+    end
 
-   // Normalize cumulative values to range [0,1]
-   cumm_norm = cumm_hist/pixel_val;
+    // Compute the cumulative distribution function (CDF)
+    cdf = cumsum(histCount) / (row * col);
 
-   // Generate new intensity mapping values
-   new_intensity = round((L - 1) * cumm_norm);
-
-   // Initialize output image
-   output = img;
-
-   // Replace old intensities with new equalized values
-   for i = 1:row
-     for j = 1:col
-       pixel = img(i,j);
-       output(i,j) = new_intensity(pixel + 1);
-     end
-   end  
-
-   // Rescale output to 8-bit range [0,255]
-   output = uint8(output*255/(L-1));
-
-   // Return equalized image
-   equi_hist = output;
+    // Map each pixel intensity using the CDF
+    equi_hist = matrix(cdf(binIndices + 1), row, col);
 
 endfunction
