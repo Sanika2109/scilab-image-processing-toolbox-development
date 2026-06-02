@@ -1,127 +1,394 @@
-Function Name: histeq (available in Octave and MATLAB only)
+# histeq
 
-Description:
-This function is used to redistribute the pixels across the image to improve the image contrast. This technique is known as histogram equalization.
+## Description:
+`histeq` performs histogram equalization on a grayscale image.
 
-Calling Sequence:
-histeq(Img)
-histeq(Img,bins)
+Histogram equalization is a contrast-enhancement technique that redistributes image intensity values so that the resulting histogram becomes more uniform. This improves visibility in images whose pixel intensities occupy only a small portion of the available intensity range.
 
-Parameters:
-Img    : Input matrix (image)
-bins   : Number of intensity levels
+If an RGB image is provided, it is first converted to grayscale before equalization.
+## Calling Sequence:
+```
+equi_hist = histeq(Img)
+equi_hist = histeq(Img, numBins)
+```
 
-Output:
-Returns an image with improved image contrast.
+---
+## Parameters:
 
-Algorithm:
-Step 1: Read input image - imread()
-Step 2: Convert image into grayscale - rgb2gray() is used and Convert it into uint8()
-Step 3: Calculate image histogram for the provided intensity level - hist = zeroes(1, bins) 
-Step 4: Compute cumulative histogram for the provided intensity level - cum_hist = zeroes(1, bins)
-Step 5: Normalize cumulative values - cum_hist/Number of pixels
-Step 6: Remap intensity values
-Step 7: Display enhanced image - imshow(enhanced_img)
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `Img` | Matrix | **Input:** Grayscale or RGB image. |
+| `numBins` | Integer | **Input (Optional):** Number of histogram bins used during equalization. Default: `64`. |
+| `equi_hist` |  Matrix | Histogram-equalized image with intensity values in the range `[0-1]`. |
 
-Implementation:
+---
+## Variable Reference
 
-1. Start
-2. Read input image I and histogram level L.
-3. Check whether L is provided by the user.
+| Variable         | Scope         | Type             | Description                                                                                                                                                |
+| ---------------- | ------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Img`             | Input / Local | Matrix  |Input image. RGB images are converted to grayscale.               |
+| `numBins` | Input / Local        | Integer         | Number of histogram bins used during equalization.                                                                           |
+| `row`           | Local         | Integer       | Number of rows in the image.                                 |
+| `col`            | Local         | Integer      | Number of columns in the image.    |
+| `minIntensity`            | Local         | Double       | Minimum intensity value in the image.   |
+| `maxIntensity`            | Local         | Double       | Maximum intensity value in the image   |
+| `normalizedImg`            | Local         | Matrix       | Image normalized to the range `[0,1]`   |
+| `binIndices`            | Local         | Matrix      | Histogram bin assigned to each pixel.   |
+| `histCount`            | Local         | Vector       | Number of pixels in each histogram bin.  |
+| `cdf`            | Local         | Double       | Maximum intensity value in the image   |
+| `equi_hist`            | Output         | Matrix      | Histogram-equalized image. |
+---
+## Helper Functions
 
-   * If No, set L = 256 (default for an 8-bit image).
-   * If Yes, use the provided value.
+| Function   | Type     | Purpose                                                                               |
+| ---------- | -------- | ------------------------------------------------------------------------------------- |
+| `ndims()`  | Built-in | Determines image dimensionality. |
+| `rgb2gray()`  | Built-in | Converts RGB images to grayscale. |
+| `argn()`   | Built-in | Determines the number of input arguments supplied to the function.|
+| `isempty()`   | Built-in | Checks for empty input images.|
+| `double()` | Built-in | Converts input arrays to double precision before arithmetic operations.      |
+| `size()`  | Built-in | Obtains image dimensions. |
+| `min()`  | Built-in | Finds minimum intensity value.   |
+| `max()`  | Built-in | Finds maximum intensity value.|
+| `floor()`   | Built-in | Assigns pixels to histogram bins.|
+| `zeros()`   | Built-in | Initializes histogram counts.|
+| `sum()`   | Built-in | Counts pixels belonging to each bin.|
+| `cumsum()`   | Built-in | Computes cumulative histogram.|
+| `matrix()`   | Built-in | Reshapes equalized pixel values into image form.|
 
-4. Convert input image I into uint8 format.
-5. Convert RGB image into a grayscale image using `rgb2gray()`.
-6. Convert grayscale image into double format.
-7. Determine image dimensions (rows and columns).
-8. Compute total number of pixels: `pixel_val = row × col`
-9. Scale image intensity values to the range [0, L−1].
-10. Initialize histogram array with zeros of size L.
-11. Traverse each pixel of the image and compute the histogram by counting occurrences of intensity values.
-12. Compute the cumulative histogram (CDF) using `cumsum()`.
-13. Normalize cumulative histogram values: `cumm_norm = cumm_hist / pixel_val`
-14. Compute new intensity values using: `new_intensity = round((L−1) × cumm_norm)`
-15. Traverse the image again and replace each pixel intensity with the corresponding new intensity value.
-16. Rescale intensity values back to [0,255].
-17. Convert output image back into uint8 format.
-18. Return the histogram-equalized image `equi_hist`.
-19. End
 
-Time Complexity:
-O(MxN), where MxN is input size
+---
+## Algorithm
 
---------------------------------------------------
+```text
+┌─────────────────────┐
+│        Start        │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Receive Input Image │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ RGB Image?          │
+└──────┬──────────────┘
+       │ Yes
+       ▼
+┌─────────────────────┐
+│ Convert to Gray     │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Set Default Bins    │
+│ (64 if omitted)     │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Empty Image?        │
+└──────┬──────────────┘
+       │ Yes
+       ▼
+┌─────────────────────┐
+│ Return Empty Output │
+└─────────────────────┘
+           │ No
+           ▼
+┌─────────────────────┐
+│ Normalize Image     │
+│ Intensities         │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Compute Histogram   │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Compute CDF         │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Map Pixels Using    │
+│ the CDF             │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Return Equalized    │
+│ Image               │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│         End         │
+└─────────────────────┘
+```
+                  
+---
+## Time & Space Complexity:
 
-Test Cases:
+Time Complexity: O(M × N + B)
 
---------------------------------------------------
-Test Case 1: Bright Image
+where:
+* `M × N` = image size.
+* `B` = number of histogram bins
 
-Input:
-A = imread("bright_cimg.jpg");
+Since `B = 64` by default, complexity is effectively O(M × N).
+
+Space Complexity: O(M × N + B)
+
+---
+
+
+## Mathematical Foundation
+
+Histogram equalization redistributes image intensities using the cumulative distribution function (CDF) of the image histogram.
+
+### Image Normalization
+Pixel values are first normalized:
+
+`I_norm(x,y) = (I(x,y) - I_min) / (I_max - I_min)`
+
+where:
+
+* `I_min` = minimum image intensity
+
+* `I_max` = maximum image intensity
+
+
+### Histogram Computation
+The normalized image is divided into `numBins` bins.
+
+For each bin:
+
+`H(k) = Number of pixels assigned to bin k`
+
+### Cumulative Distribution Function
+
+The cumulative histogram is:
+
+`CDF(k) = (1 / (M * N)) * Σ(H(i)),  i = 0 to k`
+
+where:
+
+* `M * N` = total number of pixels
+
+### Intensity Mapping
+
+Each pixel is assigned a new intensity using the CDF:
+
+`I_eq(x,y) = CDF(bin(x,y))`
+
+This produces an equalized image whose intensities lie within:
+
+`0 <= I_eq(x,y) <= 1`
+
+---
+
+### Output Range
+
+|Condition	| Output |
+| :--- | :--- | 
+Empty image	|Empty matrix
+Constant image|	Original image returned unchanged
+General image|	Equalized image in range `[0,1]`
+
+
+
+---
+### Difference between Histogram Stretching and Histogram Equalization
+
+|Method	|Purpose|
+| :--- | :--- |
+Contrast Stretching	|Expands intensity range linearly.
+Histogram Equalization	|Redistributes intensities using the image histogram.
+
+Histogram equalization generally provides stronger contrast enhancement than simple linear stretching.
+
+
+---
+---
+---
+## Test Cases:
+
+The following 6 test cases validate histogram equalization under different image characteristics and histogram-bin configurations. Run them after loading the function with `exec('histeq_test.sce', -1)`.
+
+### Test Case: 1 — Bright Image
+
+Verifies that histogram equalization improves contrast in an image whose pixel intensities are concentrated near the higher end of the intensity range.
+
+```scilab
+A = imread("bright_img.jpg");
 B = histeq(A);
+```
 
-Output:
-Scilab & Octave: Bright image contrast enhanced, details become more balanced after equalization.
+**Expected output:** 
+* Contrast is enhanced.
+* Histogram becomes more evenly distributed.
+* Bright regions become more distinguishable.
 
---------------------------------------------------
+**Observation:**
+```
+The original histogram is concentrated near high intensity values.  
+After equalization, the histogram spreads across a wider range, 
+improving contrast in bright regions.
+```
 
-Test Case 2: Dark Image
+---
+### Test Case: 2 — Dark Image
 
-Input:
+Verifies that histogram equalization improves visibility in images whose intensities are concentrated near zero.
 
-A = imread("dark_cimage.jpeg");
+```scilab
+A = imread("dark_image.jpeg");
 B = histeq(A);
+```
 
-Output:
-Scilab & Octave: Dark image brightness and visibility improved after histogram equalization.
+**Expected output:** 
+* Dark regions become more visible.
+* Contrast increases.
+* Histogram spreads over a wider intensity range.
 
---------------------------------------------------
+**Observation:**
+```
+The histogram shifts from low intensities to a broader distribution, 
+making dark details more visible.
+```
 
-Test Case 3: Low Contrast Image
+---
+### Test Case: 3 — Low Contrast Image
 
-Input:
+Verifies contrast enhancement for images having a narrow intensity distribution.
 
-A = imread("lc_cimage.jpeg");
+```scilab
+A = imread("lc_image.jpg");
 B = histeq(A);
+```
 
-Output:
-Scilab & Octave: Contrast stretched, image details become clearer and sharper.
+**Expected output:** 
+* Significant contrast improvement.
+* Details previously hidden become visible.
+* Histogram becomes more uniformly distributed.
 
---------------------------------------------------
+**Observation:**
+```
+The narrow histogram expands significantly after equalization, 
+resulting in noticeable contrast enhancement.
+```
 
-Test Case 4: Too Few Bins (4 bins)
+---
+### Test Case: 4 — Very Few Histogram Bins
 
-Input:
+Verifies behavior when the number of histogram bins is extremely small.
 
-A = imread("dog.jpg");
+```scilab
+A = imread("grayscale_img.jpg");
 B = histeq(A,4);
+```
 
-Output:
-Scilab & Octave: Image appears over-quantized with loss of detail due to insufficient histogram bins.
+**Expected output:** 
+* Equalization completes successfully.
+* Output image may exhibit intensity quantization.
+* Histogram contains only a few dominant intensity levels.
 
---------------------------------------------------
+**Observation:**
+```
+The output image exhibits visible quantization 
+because only four histogram levels are available.
+```
 
-Test Case 5: Too Many Bins (512 bins)
+---
+### Test Case: 5 — Very Large Number of Histogram Bins
 
-Input:
+Verifies behavior when the number of histogram bins greatly exceeds the default value.
 
-A = imread("dog.jpg");
+```scilab
+A = imread("grayscale_img.jpg");
 B = histeq(A,512);
+```
 
-Output:
-Scilab & Octave: Histogram equalization applied with very fine bin distribution; introduces minor noise amplification.
+**Expected output:** 
+* Equalization completes successfully.
+* Histogram mapping becomes more detailed.
+* Output image remains normalized to the range `[0,1]`.
 
---------------------------------------------------
+**Observation:**
+```
+A large number of bins provides
+finer intensity mapping and smoother equalization.
+```
 
-Test Case 6: Adequate Number of Bins (256 bins)
+---
+### Test Case: 6 — Adequate Number of Histogram Bins
 
-Input:
+Verifies histogram equalization using a moderate number of bins.
 
-A = imread("dog.jpg");
-B = histeq(A,256);
+```scilab
+A = imread("grayscale_img.jpg");
+B = histeq(A,128);
+```
 
-Output:
-Scilab & Octave: Proper histogram equalization with balanced contrast enhancement and preserved image details.
+**Expected output:** 
+* Contrast enhancement is achieved.
+* Histogram becomes more evenly distributed.
+* Visual quality improves compared to the original image.
+
+**Observation:**
+```
+The histogram is redistributed effectively 
+while maintaining smooth intensity transitions.
+```
+---
+### Test Results
+
+The file `histeq_Test_Results.pdf` contains the output generated for each test case, including:
+
+* Original input image.
+* Histogram-equalized image.
+* Histogram before equalization.
+* Histogram after equalization.
+* Additional test cases for visual observations
+
+---
+
+## Compatibility Notes
+
+This implementation follows the behavior of GNU Octave's `histeq` function.
+
+### Important Notes
+
+* RGB images are automatically converted to grayscale.
+* Default number of bins is `64`.
+* Output intensities are normalized to the range `[0,1]`.
+* Constant images are returned unchanged.
+* Empty images return an empty matrix.
+---
+
+### Recommended Usage
+
+```scilab
+Img = imread("image.jpg");
+
+Equalized = histeq(Img);
+
+imshow(Equalized);
+```
+Using a custom number of bins:
+```scilab
+Equalized = histeq(Img, 128);
+```
+
+---
+
+## References
+
+[1] MATLAB Image Processing Toolbox Documentation
+
+[2] GNU Octave Image Package Documentation
+
