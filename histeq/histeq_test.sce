@@ -73,8 +73,8 @@ mprintf("\n");
 
 // Test 6: Adequate bins
 A = imread("C:\Users\Sanika\Downloads\dog.jpg");
-disp("Test 6: Adequate Number of Bins (256 bins)");
-B = histeq(A,256);
+disp("Test 6: Adequate Number of Bins (128 bins)");
+B = histeq(A,128);
 figure();
 subplot(1,2,1);
 imshow(A);
