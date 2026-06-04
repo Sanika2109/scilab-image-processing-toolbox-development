@@ -10,34 +10,42 @@ function median_filter = medfilt2(I, windowsize, padopt)
         padopt = "zero";
     end
 
-    // Determine whether the second argument specifies a window size or a custom domain mask
+    // Convert RGB image to grayscale if necessary
+    if ndims(I) == 3 then
+       I = rgb2gray(I);
+    elseif ndims(I) <> 2 then
+       error("medfilt2: Input image must be a 2-D or RGB image.");
+    end
+
+    // Determine window dimensions
     if size(windowsize,"*")==1 then
         // Scalar window size (e.g., 3 → 3×3)
         m = windowsize;
         n = windowsize;
-        domain = ones(m,n);
 
     elseif size(windowsize,"*")==2 & min(size(windowsize))==1 then
         // Rectangular window dimensions [m n]
         m = windowsize(1);
         n = windowsize(2);
-        domain = ones(m,n);
 
     else
 
-        // Custom domain mask
-        domain = windowsize <> 0;
-        [m,n] = size(domain);
+        error("medfilt2: Window size must be a scalar or a two-element vector.");
 
     end
 
-    // Median filtering requires a center pixel, therefore neighborhood dimensions must be odd
+    // Median filtering requires odd-sized windows
     if modulo(m,2)==0 | modulo(n,2)==0 then
         error("Window dimensions must be odd");
     end
 
     // Get image dimensions
     [row,col] = size(I);
+
+    // Check for empty image
+    if row==0 | col==0 then
+        error("medfilt2: Input image cannot be empty.");
+    end
 
     // Compute padding required on each side
     k1 = floor(m/2);
@@ -79,16 +87,14 @@ function median_filter = medfilt2(I, windowsize, padopt)
     // Apply median filtering pixel by pixel
     for i = 1:row
         for j = 1:col
-
             // Extract neighborhood centered at current pixel
             window = padded(i:i+m-1, j:j+n-1);
 
-            // Select only the elements specified by the domain mask
-            values = window(find(domain));
+            // Convert neighborhood into a vector
+            values = matrix(window,1,-1);
 
             // Replace current pixel with neighborhood median
             median_filter(i,j) = median(values);
-
         end
     end
 endfunction
