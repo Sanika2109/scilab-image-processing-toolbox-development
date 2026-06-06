@@ -1,11 +1,12 @@
 cd(get_absolute_file_path("medfilt2_test.sce"));
 exec("medfilt2.sci",-1);
+Aimg = imread("cameraman.jpeg");
 
 // ==================================================
 // Test 1: Default Parameters
 // ==================================================
-A = imread("C:/Users/Sanika/Downloads/cameraman.jpeg");
 disp("Test 1: Default Parameters");
+A = Aimg;
 B = medfilt2(double(A));
 figure();
 subplot(1,2,1); imshow(uint8(A)); title("Original");
@@ -16,6 +17,7 @@ mprintf("\n");
 // Test 2: Square Window [5x5]
 // ==================================================
 disp("Test 2: Square Window [5x5]");
+A = Aimg;
 B = medfilt2(double(A), [5 5], "replicate");
 figure();
 subplot(1,2,1); imshow(uint8(A)); title("Original");
@@ -26,6 +28,7 @@ mprintf("\n");
 // Test 3: Rectangular Window [3x5]
 // ==================================================
 disp("Test 3: Rectangular Window [3x5]");
+A = Aimg;
 B = medfilt2(double(A), [3 5], "replicate");
 figure();
 subplot(1,2,1); imshow(uint8(A)); title("Original");
@@ -36,7 +39,7 @@ mprintf("\n");
 // Test 4: Rectangular Window [5x7]
 // ==================================================
 disp("Test 4: Rectangular Window [5x7]");
-
+A = Aimg;
 B = medfilt2(double(A), [5 7], "replicate");
 
 figure();
@@ -145,10 +148,8 @@ mprintf("\n");
 // ==================================================
 // Test 10: Salt-and-Pepper Noise Removal
 // ==================================================
-A = imread("C:/Users/Sanika/Downloads/cameraman.jpeg");
-
 disp("Test 10: Salt-and-Pepper Noise Removal");
-
+A = Aimg;
 B = medfilt2(double(A), [3 3], "replicate");
 
 figure();
