@@ -1,5 +1,6 @@
 cd(get_absolute_file_path("bwarea_test.sce"));
 exec("bwarea.sci",-1);
+ImgTest = imread("bright_img.jpg");
 
 // Test 1: Empty image
 BW = zeros(5,5);
@@ -93,9 +94,10 @@ disp(area);
 mprintf("\n");
 
 // Test 9: Binary image from grayscale thresholding
-Img=imread("C:\Users\Sanika\Downloads\bright_img.jpg");
 disp("Test 9: Thresholded Binary Image");
-BW = rgb2gray(Img);
+Img = ImgTest;
+Gray = rgb2gray(Img);
+BW = Gray > 128;
 area=bwarea(BW);
 figure();
 subplot(1,2,1);
