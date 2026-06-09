@@ -1,54 +1,37 @@
-function equi_hist = histeq(Img, numBins)
-    
-    // Ensure input is a grayscale image
-    if ndims(Img) == 3 then
-       Img = rgb2gray(Img);
-    end
+function J = histeq(I, n)
 
-    // Default 64 histogram bins for Octave-like behavior
+    // Default value for n
     if argn(2) < 2 then
-        numBins = 64;
+        n = 64;
     end
 
-    // Return empty output for empty input image
-    if isempty(Img) then
-        equi_hist = [];
+    // Check number of input arguments
+    if argn(2) < 1 | argn(2) > 2 then
+        error("histeq: Wrong number of input arguments.");
+    end
+
+    // Handle empty input
+    if isempty(I) then
+        J = [];
         return;
     end
-
-    // Convert image to double precision for computations
-    Img = double(Img);
 
     // Get image dimensions
-    [row, col] = size(Img);
+    [r, c] = size(I);
 
-    // Find minimum and maximum intensity values
-    minIntensity = min(Img);
-    maxIntensity = max(Img);
+    // Convert image to range [0,1]
+    I = mat2gray(I);
 
-    // If all pixels have the same intensity, return the image unchanged
-    if maxIntensity == minIntensity then
-        equi_hist = Img;
-        return;
-    end
+    // Convert grayscale image to indexed image
+    X = floor(I * (n - 1)); //equivalent of gray2ind function
 
-    // Normalize image intensities to the range [0, 1]
-    normalizedImg = (Img - minIntensity) / (maxIntensity - minIntensity);
+    // Compute histogram
+    [nn, xx] = imhist(I, n);
 
-    // Assign each pixel to one of the histogram bins
-    binIndices = floor(normalizedImg * (numBins - 1));
+    // Compute cumulative distribution function (CDF)
+    Icdf = (1 / prod(size(I))) * cumsum(nn);
 
-    // Compute histogram counts for each bin
-    histCount = zeros(numBins, 1);
-
-    for bin = 0:numBins-1
-        histCount(bin + 1) = sum(binIndices == bin);
-    end
-
-    // Compute the cumulative distribution function (CDF)
-    cdf = cumsum(histCount) / (row * col);
-
-    // Map each pixel intensity using the CDF
-    equi_hist = matrix(cdf(binIndices + 1), row, col);
+    // Map pixels using the CDF
+    J = matrix(Icdf(X + 1), r, c);
 
 endfunction
