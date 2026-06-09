@@ -1,29 +1,29 @@
-function mse = immse(A, B)
+function mse = immse(x, y)
 
-    // Ensure exactly two input arguments are provided
+    // Check number of input arguments
     if argn(2) <> 2 then
-        error("immse requires exactly two input arguments.");
+        error("immse: Two input arguments required.");
+    // Check whether X and Y have the same size
+    elseif or(size(x) <> size(y)) then
+        error("immse: X and Y must be of same size");
+    // Check whether X and Y have the same data type
+    elseif typeof(x) <> typeof(y) then
+        error("immse: X and Y must have same class");
     end
 
-    // Check whether input images are empty
-    if size(A, "*") == 0 | size(B, "*") == 0 then
-        error("Input images cannot be empty.");
+    // Convert integer images to double
+    if typeof(x) == "uint8" | typeof(x) == "uint16" | ...
+       typeof(x) == "int8"  | typeof(x) == "int16"  | ...
+       typeof(x) == "int32" | typeof(x) == "uint32" then
+
+        x = double(x);
+        y = double(y);
     end
 
-    // Verify that both images have the same dimensions
-    if or(size(A) <> size(B)) then
-        error("Input images must have the same dimensions.");
-    end
+    // Compute error image
+    err = x - y;
 
-    // Convert images to double type for arithmetic operations
-    A = double(A);
-    B = double(B);
-
-    // Compute difference between corresponding pixels
-    diff = A - B;
-
-    // Calculate Mean Squared Error (MSE)
-    // MSE = average of squared pixel differences
-    mse = mean(diff.^2);
+    // Mean Squared Error
+    mse = sum(err(:).^2) / size(err, "*");
 
 endfunction
