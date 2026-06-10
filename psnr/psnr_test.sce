@@ -1,5 +1,7 @@
-cd(get_absolute_file_path("psnr_test.sce"));
-exec("psnr.sci", -1);
+base = get_absolute_file_path("psnr_test.sce");
+exec(base + "psnr.sci", -1);
+exec(base + "../immse/immse.sci", -1);
+exec(base + "../getrangefromclass/getrangefromclass.sci", -1);
 
 // Test 1: Identical Images
 A = [10 20; 30 40];
@@ -51,8 +53,8 @@ mprintf("\n");
 // Test 8: Custom Peak Value
 A = [10 20; 30 40];
 B = [12 18; 33 39];
-disp("Test 8: Custom Peak Value (255)");
-disp(psnr(A,B,255));
+disp("Test 8: Custom Peak Value (128)");
+disp(psnr(A,B,128));
 mprintf("\n");
 
 // Test 9: High Dynamic Range
