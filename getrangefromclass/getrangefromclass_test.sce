@@ -3,6 +3,9 @@ exec(base + "../intmin/intmin.sci", -1);
 exec(base + "../intmax/intmax.sci", -1);
 exec(base + "getrangefromclass.sci", -1);
 
+//Test Image
+ImgTest = imread("cameraman.jpeg");
+
 // ==================================================
 // Test 1: uint8 image
 // ==================================================
@@ -117,7 +120,7 @@ mprintf("\n");
 // Test 11: Actual Grayscale Image
 // ==================================================
 disp("Test 11: Actual Grayscale Image");
-I = imread("C:/Users/Sanika/Downloads/cameraman.jpeg"); 
+I = ImgTest;
 disp("Input type:", typeof(I));  
 r = getrangefromclass(I);
 disp("Output type:", typeof(r));
