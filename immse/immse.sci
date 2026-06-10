@@ -3,7 +3,6 @@ function mse = immse(x, y)
     // if (nargin != 2)
     if argn(2) <> 2 then
         error("immse: Wrong number of input arguments.");
-    end
 
     // elseif (! size_equal (x, y))
     elseif or(size(x) <> size(y)) then
