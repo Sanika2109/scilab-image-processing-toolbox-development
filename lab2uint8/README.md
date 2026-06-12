@@ -174,15 +174,15 @@ out = lab2uint8(lab);
 **Expected output:** `Returns a uint8 representation of the input L* a* b* image.`
 
 ---
-### Test Case: 2 — Minimum Valid Lab* Values
+### Test 2: Minimum valid L*a*b* values (uint8 Input)
 
 Verifies conversion of L* a* b* values at the lower end of the nominal range.
 
 ```scilab
-lab = cat(3, ... 
-zeros(2,2), ... 
--128*ones(2,2), ... 
--128*ones(2,2)); 
+lab = cat(3, ...
+          uint8(zeros(2,2)), ...
+          uint8(zeros(2,2)), ...
+          uint8(zeros(2,2)));
 
 out = lab2uint8(lab);
 ```
@@ -190,15 +190,15 @@ out = lab2uint8(lab);
 **Expected output:** `Returns uint8 values corresponding to the minimum valid L* a* b* range.`
 
 ---
-### Test Case: 3 — Maximum Valid Lab* Values
+### Test Case: 3 — Maximum valid L*a*b* values (uint16 Input)
 
 Verifies conversion of L* a* b* values at the upper end of the nominal range.
 
 ```scilab
-lab = cat(3, ... 
-100*ones(2,2), ... 
-127*ones(2,2), ... 
-127*ones(2,2)); 
+lab = cat(3, ...
+          uint16(65280*ones(2,2)), ...
+          uint16(65280*ones(2,2)), ...
+          uint16(65280*ones(2,2)));
 
 out = lab2uint8(lab);
 ```
@@ -221,15 +221,15 @@ out = lab2uint8(lab);
 **Expected output:** `Returns a uint8 image after converting floating-point L* a* b* values.`
 
 ---
-### Test Case: 5 — Integer Input
+### Test Case: 5 — uint8 Encoded L*a*b* Input
 
 Verifies conversion when the input consists of integer-valued L* a* b* data.
 
 ```scilab
-lab = cat(3, ... 
-[0 50; 75 100], ... 
-[-128 0; 50 127], ... 
-[-128 0; 50 127]); 
+lab = cat(3, ...
+          uint8([0 50; 75 100]), ...
+          uint8([0 128; 178 255]), ...
+          uint8([0 128; 178 255]));
 
 out = lab2uint8(lab);
 ```
@@ -238,12 +238,15 @@ out = lab2uint8(lab);
 
 
 ---
-### Test Case: 6 — Single Pixel Lab* Value
+### Test Case: 6 — Single pixel L*a*b* value (uint16 Input)
 
 Verifies conversion of a single L* a* b* pixel.
 
 ```scilab
-lab = cat(3, 50, 0, 0); 
+lab = cat(3, ...
+          uint16(32640), ...
+          uint16(32768), ...
+          uint16(32768));
 out = lab2uint8(lab);
 ```
 
@@ -266,14 +269,14 @@ out = lab2uint8(lab);
 **Expected output:** `Returns a uint8 image having the same dimensions as the input.`
 
 ---
-### Test Case: 8 — Out-of-Range Values
+### Test Case: 8 — Out-of-Range L*a*b* Values (uint16 Input)
 
 Verifies behavior when L* a* b* values fall outside the nominal range.
 ```scilab
-lab = cat(3, ... 
-[-10 120; 150 -20], ... 
-[-200 200; -150 150], ... 
-[-250 250; -180 180]); 
+lab = cat(3, ...
+          uint16([0 32768; 49152 65535]), ...
+          uint16([0 15234; 33425 61767]), ...
+          uint16([0 54678; 42252 65535]));
 
 out = lab2uint8(lab);
 ```
@@ -293,12 +296,12 @@ out = lab2uint8(lab);
 **Expected output:** `Behavior depends on the validation performed by lab2cls().`
 
 ---
-### Test Case: 10 — Invalid 2-D Input
+### Test Case: 10 — Invalid 2-D uint8 Input (Should Error)
 
 Verifies error handling when the input is not a valid Lab* image.
 
 ```scilab
-lab = [50 60; 70 80]; 
+lab = uint8([50 60; 70 80]);
 out = lab2uint8(lab);
 ```
 
