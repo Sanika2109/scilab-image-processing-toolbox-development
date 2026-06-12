@@ -1,7 +1,7 @@
 # lab2uint16
 
 ## Description:
-`lab2uint16` lab2uint8 converts a CIE L* a* b* image or colormap to the `uint16` representation commonly used in image-processing applications.
+`lab2uint16` converts a CIE L* a* b* image or colormap to the `uint16` representation commonly used in image-processing applications.
 
 The function serves as a wrapper around `lab2cls`, requesting conversion of the input L* a* b* data to the `uint16` class. The conversion maps the L* a* b* components into the valid range of unsigned 16-bit integers `(0–65535)`.
 
