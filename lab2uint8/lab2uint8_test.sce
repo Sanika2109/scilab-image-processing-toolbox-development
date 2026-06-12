@@ -19,24 +19,32 @@ mprintf("\n");
 
 
 // ==================================================
-// Test 2: Minimum valid L*a*b* values
+// Test 2: Minimum valid L*a*b* values (uint8 Input)
 // ==================================================
-disp("Test 2: Minimum Valid Values");
-lab = cat(3, zeros(2,2), -128*ones(2,2), -128*ones(2,2));
+disp("Test 2: Minimum Valid L*a*b* Values (uint8 Input)");
+lab = cat(3, ...
+          uint8(zeros(2,2)), ...
+          uint8(zeros(2,2)), ...
+          uint8(zeros(2,2)));
 disp("Input type:", typeof(lab));
 out = lab2uint8(lab);
+disp("Output type:", typeof(out));
 disp("Output:");
 disp(out);
 mprintf("\n");
 
 
 // ==================================================
-// Test 3: Maximum valid L*a*b* values
+// Test 3: Maximum valid L*a*b* values (uint16 Input)
 // ==================================================
-disp("Test 3: Maximum Valid Values");
-lab = cat(3, 100*ones(2,2), 127*ones(2,2), 127*ones(2,2));
+disp("Test 3: Maximum Valid L*a*b* Values (int16 Input)");
+lab = cat(3, ...
+          uint16(65280*ones(2,2)), ...
+          uint16(65280*ones(2,2)), ...
+          uint16(65280*ones(2,2)));
 disp("Input type:", typeof(lab));
 out = lab2uint8(lab);
+disp("Output type:", typeof(out));
 disp("Output:");
 disp(out);
 mprintf("\n");
@@ -52,33 +60,40 @@ lab = cat(3, ...
           [15.4 -12.7; 25.8 -30.6]);
 disp("Input type:", typeof(lab));
 out = lab2uint8(lab);
+disp("Output type:", typeof(out));
 disp("Output:");
 disp(out);
 mprintf("\n");
 
 
 // ==================================================
-// Test 5: Integer input
+// Test 5: uint8 Encoded L*a*b* Input
 // ==================================================
-disp("Test 5: Integer Input");
+disp("Test 5: uint8 Encoded L*a*b* Input");
+
 lab = cat(3, ...
-          [0 50; 75 100], ...
-          [-128 0; 50 127], ...
-          [-128 0; 50 127]);
+          uint8([0 50; 75 100]), ...
+          uint8([0 128; 178 255]), ...
+          uint8([0 128; 178 255]));
 disp("Input type:", typeof(lab));
 out = lab2uint8(lab);
+disp("Output type:", typeof(out));
 disp("Output:");
 disp(out);
 mprintf("\n");
 
 
 // ==================================================
-// Test 6: Single pixel L*a*b* value
+// Test 6: Single pixel L*a*b* value (uint16 Input)
 // ==================================================
-disp("Test 6: Single Pixel");
-lab = cat(3, 50, 0, 0);
+disp("Test 6: Single Pixel L*a*b* Value (uint16 Input)");
+lab = cat(3, ...
+          uint16(32640), ...
+          uint16(32768), ...
+          uint16(32768));
 disp("Input type:", typeof(lab));
 out = lab2uint8(lab);
+disp("Output type:", typeof(out));
 disp("Output:");
 disp(out);
 mprintf("\n");
@@ -94,21 +109,23 @@ lab(:,:,2) = lab(:,:,2) * 255 - 128;
 lab(:,:,3) = lab(:,:,3) * 255 - 128;
 disp("Input type:", typeof(lab));
 out = lab2uint8(lab);
-disp("Output size:");
-disp(size(out));
+disp("Output type:", typeof(out));
+disp("Output:");
+disp(out);
 mprintf("\n");
 
 
 // ==================================================
-// Test 8: Values outside nominal range
+// Test 8: Out-of-Range L*a*b* Values (uint16 Input)
 // ==================================================
-disp("Test 8: Out-of-Range Values");
+disp("Test 8: Out-of-Range L*a*b* Values (uint16 Input)");
 lab = cat(3, ...
-          [-10 120; 150 -20], ...
-          [-200 200; -150 150], ...
-          [-250 250; -180 180]);
+          uint16([0 32768; 49152 65535]), ...
+          uint16([0 15234; 33425 61767]), ...
+          uint16([0 54678; 42252 65535]));
 disp("Input type:", typeof(lab));
 out = lab2uint8(lab);
+disp("Output type:", typeof(out));
 disp("Output:");
 disp(out);
 mprintf("\n");
@@ -122,7 +139,8 @@ disp("Test 9: Empty Input");
 try
     lab = [];
     out = lab2uint8(lab);
-    disp(out);
+    disp("Output type:", typeof(out));
+    disp("Output:", out);
 catch
     disp(lasterror());
 end
@@ -131,13 +149,14 @@ mprintf("\n");
 
 
 // ==================================================
-// Test 10: Invalid 2-D input (should error)
+// Test 10: Invalid 2-D uint8 Input (Should Error)
 // ==================================================
-disp("Test 10: Invalid 2-D Input");
+disp("Test 10: Invalid 2-D uint8 Input (Should Error)");
 try
-    lab = [50 60; 70 80];
+    lab = uint8([50 60; 70 80]);
     out = lab2uint8(lab);
-    disp(out);
+    disp("Output type:", typeof(out));
+    disp("Output:", out);
 catch
     disp(lasterror());
 end
