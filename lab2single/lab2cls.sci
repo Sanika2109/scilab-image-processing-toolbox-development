@@ -104,8 +104,7 @@ function lab = lab2cls(lab, out_cls)
 
         case "uint16" then
 
-            lab = lab / 256;
-            lab = uint8(lab);
+            lab = uint8(double(lab) / 256);
 
         case "uint8" then
 
