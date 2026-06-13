@@ -21,14 +21,14 @@ disp(out);
 mprintf("\n");
 
 // ==================================================
-// Test 2: Minimum Valid Values
+// Test 2: Minimum Valid Values (uint8 Input)
 // ==================================================
-disp("Test 2: Minimum Valid Values");
+disp("Test 2: Minimum Valid Values (uint8 Input)");
 
-lab = cat(3, ...
-          zeros(2,2), ...
-          -128*ones(2,2), ...
-          -128*ones(2,2));
+lab = uint8(cat(3, ...
+                zeros(2,2), ...
+                zeros(2,2), ...
+                zeros(2,2)));
 
 out = lab2uint16(lab);
 
@@ -36,14 +36,14 @@ disp(out);
 mprintf("\n");
 
 // ==================================================
-// Test 3: Maximum Valid Values
+// Test 3: Maximum Valid Values (uint16 Input)
 // ==================================================
-disp("Test 3: Maximum Valid Values");
+disp("Test 3: Maximum Valid Values (uint16 Input)");
 
-lab = cat(3, ...
-          100*ones(2,2), ...
-          127*ones(2,2), ...
-          127*ones(2,2));
+lab = uint16(cat(3, ...
+                 65280*ones(2,2), ...
+                 65280*ones(2,2), ...
+                 65280*ones(2,2)));
 
 out = lab2uint16(lab);
 
