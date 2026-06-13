@@ -279,9 +279,9 @@ out = lab2double(lab);
 ---
 ### Test Case: 8 — Single Pixel
 
-Verifies conversion of a single uint8-encoded L* a* b* pixel.
+Verifies conversion of a double-encoded L* a* b* pixel.
 ```scilab
-lab = uint8(cat(3, 128, 128, 128)); 
+lab = cat(3, 50, 0, 0);
 
 out = lab2double(lab);
 ```
@@ -294,10 +294,10 @@ out = lab2double(lab);
 Verifies conversion of an L* a* b* colormap represented as an M×3 matrix.
 
 ```scilab
-lab = uint8([... 
-0 128 128; 
-128 128 128; 
-255 255 255]); 
+lab = [...
+    0    -128  -128;
+    50      0     0;
+    100    127   127]; 
 
 out = lab2double(lab);
 ```
