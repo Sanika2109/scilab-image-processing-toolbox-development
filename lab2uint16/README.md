@@ -178,15 +178,15 @@ out = lab2uint16(lab);
 **Expected output:** `Returns a uint16 representation of the input L* a* b* image.`
 
 ---
-### Test Case: 2 — Minimum Valid Lab* Values
+### Test Case: 2 — Minimum Valid Lab* Values (uint8 Input)
 
 Verifies conversion of L* a* b* values at the lower end of the nominal range.
 
 ```scilab
-lab = cat(3, ... 
-zeros(2,2), ... 
--128*ones(2,2), ... 
--128*ones(2,2)); 
+lab = uint8(cat(3, ...
+                zeros(2,2), ...
+                zeros(2,2), ...
+                zeros(2,2)));
 
 out = lab2uint16(lab);
 ```
@@ -194,15 +194,15 @@ out = lab2uint16(lab);
 **Expected output:** `Returns uint16 values corresponding to the minimum valid L* a* b* range.`
 
 ---
-### Test Case: 3 — Maximum Valid Lab* Values
+### Test Case: 3 — Maximum Valid Lab* Values (uint16 Input)
 
 Verifies conversion of L* a* b* values at the upper end of the nominal range.
 
 ```scilab
-lab = cat(3, ... 
-100*ones(2,2), ... 
-127*ones(2,2), ... 
-127*ones(2,2)); 
+lab = uint16(cat(3, ...
+                 65280*ones(2,2), ...
+                 65280*ones(2,2), ...
+                 65280*ones(2,2)));
 
 out = lab2uint16(lab);
 ```
