@@ -197,7 +197,7 @@ Lower MSE corresponds to higher PSNR.
 
 ## Test Cases:
 
-The following 12 test cases cover valid inputs, boundary conditions, numerical precision, custom peak values, and special cases such as identical images and random matrices. Run them after loading the function with `exec('psnr_test.sce', -1)`.
+The following 12 test cases cover valid inputs, boundary conditions, numerical precision, custom peak values, and special cases such as identical images and random matrices. Run them after loading the function first with `exec('immse.sci', -1)` and `exec('getrangefromclass.sci', -1)` and then with `exec('psnr_test.sce', -1)`.
 
 ### Test Case: 1 — Identical Images
 
