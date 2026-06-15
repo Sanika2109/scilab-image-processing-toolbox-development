@@ -180,7 +180,7 @@ Datatype
 ---
 ## Test Cases:
 
-The following 15 test cases supported image classes, boundary conditions, and invalid inputs.. Run them after loading the function with `(exec 'getrangefromclass_test.sci', -1)`.
+The following 15 test cases support image classes, boundary conditions, and invalid inputs. Run them after loading the function first with `exec ('intmin.sci', -1)` and `exec ('intmax.sci', -1)` and then with `exec ('getrangefromclass_test.sce', -1)`.
 
 ### Test Case: 1 — uint8 Image
 
