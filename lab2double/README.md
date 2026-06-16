@@ -175,7 +175,7 @@ lab2double()| 	double	| Floating-point representation
 ---
 ## Test Cases:
 
-The following 11 test cases cover valid L* a* b* colormaps, boundary values, special inputs, and error conditions. Run them after loading the function with `exec('lab2double_test.sce', -1)`.
+The following 11 test cases cover valid L* a* b* colormaps, boundary values, special inputs, and error conditions.  Run them after loading the function first with `exec ('lab2cls.sci', -1)` and then `exec('lab2double_test.sce', -1)`.
 
 ### Test Case: 1 — Typical uint8 LAB Image
 
