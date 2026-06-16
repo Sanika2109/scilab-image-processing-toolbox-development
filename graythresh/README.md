@@ -326,7 +326,7 @@ threshold = argmin_t | CDF(t) - p |     (default p = 0.5)
 ---
 ## Test Cases:
 
-The following 18 test cases use small histogram vectors (passed directly as `img`, via the `hist_in` path) so that results can be verified without needing a full image. All edge cases and critical cases are covered in the test suite. Run them after loading the function with `exec('graythresh_test.sce', -1)`.
+The following 18 test cases use small histogram vectors (passed directly as `img`, via the `hist_in` path) so that results can be verified without needing a full image. All edge cases and critical cases are covered in the test suite. Run them after loading the function first with `exec('intmax.sci', -1)`and then `exec('graythresh_test.sce', -1)`.
 
 ### Test Case 1 — Otsu Thresholding on Bimodal Image
 
