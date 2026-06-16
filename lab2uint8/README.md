@@ -156,7 +156,7 @@ The returned data:
 ---
 ## Test Cases:
 
-The following 10 test cases cover valid L* a* b* colormaps, boundary values, special inputs, and error conditions. Run them after loading the function with `(exec 'lab2uint8_test.sce', -1)`.
+The following 10 test cases cover valid L* a* b* colormaps, boundary values, special inputs, and error conditions. Run them after loading the function first with `exec ('lab2cls.sci', -1)` and then `exec ('lab2uint8_test.sce', -1)`.
 
 ### Test Case: 1 — Typical Lab* Image
 
