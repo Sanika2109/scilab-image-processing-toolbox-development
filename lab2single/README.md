@@ -222,7 +222,7 @@ In this Scilab implementation, `lab2single()` and `lab2double()` produce identic
 ---
 ## Test Cases:
 
-The following 9 test cases cover valid L* a* b* images, colormaps, boundary values, special inputs, and error conditions. Run them after loading the function with `exec('lab2single_test.sce', -1)`.
+The following 9 test cases cover valid L* a* b* images, colormaps, boundary values, special inputs, and error conditions. Run them after loading the function first with `exec ('lab2cls.sci', -1)` and then `exec('lab2single_test.sce', -1)`.
 
 ### Test Case: 1 — uint8 LAB Colormap
 
