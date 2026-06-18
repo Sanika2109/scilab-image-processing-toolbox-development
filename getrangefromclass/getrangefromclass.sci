@@ -10,9 +10,9 @@ function r = getrangefromclass(img)
 
     if isinteger(img) then
         r = [intmin(cl) intmax(cl)];
-        
-    // constant = Scilab equivalent of double
-    // boolean = Scilab equivalent of logical 
+
+    // Octave class names "double" and "logical" correspond to
+    // typeof() values "constant" and "boolean" in Scilab.
     // Scilab doesn't have a "single" datatype
     // strcmp() causes a size-mismatch error for scalar-to-vector string comparisons in Scilab.
     // Therefore, element-wise comparison with or() is used instead.
