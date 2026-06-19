@@ -16,9 +16,25 @@ The function supports L* a* b* data stored as:
 Input data may be encoded as `uint8`, `uint16` or floating-point (`constant`) values. Integer-encoded L* a* b* values are converted to their floating-point representation according to the scaling rules implemented in `lab2cls`.
 
 The function accepts exactly one input argument and returns the converted L* a* b* image or colormap.
+
 ## Calling Sequence:
 ```
 lab_single = lab2single(lab)
+```
+## Dependencies
+
+The function depends on the following external file:
+
+| File | Purpose |
+|--------|---------|
+| `lab2cls.sci` | Converts L* a* b* data to the specified output class. |
+
+The dependency file must be loaded before executing `lab2single.sci`. The test script does this automatically:
+
+```scilab
+base = get_absolute_file_path("lab2single_test.sce");
+exec(base + "../lab2cls/lab2cls.sci", -1);
+exec(base + "lab2single.sci", -1);
 ```
 
 ---
@@ -53,44 +69,7 @@ lab_single = lab2single(lab)
 | `double()`  | Built-in (used internally by `lab2cls()`) | Converts numeric values to floating-point representation.|
 
 ---
-## Algorithm:
 
-```text
-Start
-  |
-  v
-Receive Input: LAB
-  |
-  v
-Check Number of Input Arguments
-  |
-  v
-Is there exactly one input argument?
-  |
-  +-- No --> Generate Error Message
-  |             |
-  |             v
-  |            End
-  |
-  +-- Yes --> Call lab2cls(LAB, "single")
-                 |
-                 v
-      Validate LAB Dimensions
-                 |
-                 v
-Convert uint8 / uint16 Values to Floating-Point LAB Values
-                 |
-                 v
-        Preserve Original Dimensions
-                 |
-                 v
-        Return Converted LAB 
-                 | 
-                 v 
-                End
-```
-                    
----
 ## Time & Space Complexity:
 
 **Time Complexity:** `O(M × N × C x K)`
@@ -222,7 +201,11 @@ In this Scilab implementation, `lab2single()` and `lab2double()` produce identic
 ---
 ## Test Cases:
 
-The following 9 test cases cover valid L* a* b* images, colormaps, boundary values, special inputs, and error conditions. Run them after loading the function first with `exec ('lab2cls.sci', -1)` and then `exec('lab2single_test.sce', -1)`.
+The following 9 test cases cover valid L* a* b* images, colormaps, boundary values, special inputs, and error conditions. Run the test script:
+
+```scilab
+exec('lab2single_test.sce', -1);
+```
 
 ### Test Case: 1 — uint8 LAB Colormap
 
