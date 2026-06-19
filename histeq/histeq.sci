@@ -23,7 +23,7 @@ function J = histeq(I, n)
     I = mat2gray(I);
 
     // Convert grayscale image to indexed image
-    X = floor(I * (n - 1)); //equivalent of gray2ind function
+    X = floor(I * (n - 1)); 
 
     // Compute histogram
     [nn, xx] = imhist(I, n);
