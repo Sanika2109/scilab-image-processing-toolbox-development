@@ -13,7 +13,22 @@ level = graythresh(img, "percentile", p)
 [level, sep] = graythresh(img, "otsu")
 ```
 
----
+## Dependencies
+
+The function depends on the following external file:
+
+| File | Purpose |
+|--------|---------|
+| `intmax.sci` | Returns the maximum representable value for an integer datatype. |
+
+This dependency file must be loaded before executing `graythresh.sci`. The test script does this automatically:
+
+```scilab
+base = get_absolute_file_path("graythresh_test.sce");
+exec(base + "../intmax/intmax.sci", -1);
+exec(base + "graythresh.sci", -1);
+```
+
 ## Parameters:
 
 | Parameter | Type | Description |
@@ -93,79 +108,6 @@ level = graythresh(img, "percentile", p)
 | `cumsum()`, `sum()`, `mean()`, `find()`, `max()`/`min()` | Built-in | Vectorized statistics over histograms used throughout `otsu`, `moments`, `percentile`, etc. |
 
 ---
-## Algorithm
-
-```text
-┌──────────────────────────────┐
-│             Start            │
-└───────────────┬──────────────┘
-                │
-                ▼
-┌──────────────────────────────┐
-│ Receive Inputs:              │
-│ img, algo, varargin          │
-└───────────────┬──────────────┘
-                │
-                ▼
-┌──────────────────────────────────┐
-│ Validate Arguments               │
-│ • 1–3 inputs supplied            │
-│ • default algo = "otsu"          │
-│ • only "percentile" accepts an   │
-│   extra option (p)               │
-└───────────────┬──────────────────┘
-                │
-                ▼
-┌────────────────────────────────┐
-│ Classify Input                 │
-│ • numeric?  → else error       │
-│ • M×N×3 (RGB) → rgb2gray       │
-│ • non-negative double vector → │
-│   treat as histogram (hist_in) │
-└───────────────┬────────────────┘
-                │
-                ▼
-        ┌─────────────────┐
-        │ algo == "mean"? │
-        └───┬─────────┬───┘
-        yes │         │ no
-            ▼         ▼
-┌───────────────────┐ ┌──────────────────────────────────┐
-│ level =           │ │  Build / use histogram `ihist`   │
-│ mean(im2double    │ │  • convert to uint8/uint16/int16 │
-│ (img(:)))         │ │  • count pixel intensities       │
-│ → return level    │ │    (nbins = intmax(type)+1)      │
-└───────────────────┘ └───────────────┬──────────────────┘
-                                      │
-                                      ▼
-                       ┌────────────────────────────────┐
-                       │ Dispatch on `algo`:            │
-                       │ otsu • moments • maxentropy    │
-                       │ intermodes • minimum •         │
-                       │ percentile • minerror •        │
-                       │ maxlikelihood • intermeans •   │
-                       │ concavity                      │
-                       └───────────────┬────────────────┘
-                                       │
-                                       ▼
-                       ┌────────────────────────────────┐
-                       │ Normalize Threshold            │
-                       │ thresh(1) /= (nbins - 1)       │
-                       │ (skipped if nbins == 1)        │
-                       └───────────────┬────────────────┘
-                                       │
-                                       ▼
-                       ┌────────────────────────────────┐
-                       │ Return level                   │
-                       │ (and sep, for "otsu" if        │
-                       │  a second output is requested) │
-                       └───────────────┬────────────────┘
-                                       │
-                                       ▼
-                              ┌────────────────┐
-                              │       End      │
-                              └────────────────┘
-```
 
 ### Method summaries
 
@@ -326,7 +268,11 @@ threshold = argmin_t | CDF(t) - p |     (default p = 0.5)
 ---
 ## Test Cases:
 
-The following 18 test cases use small histogram vectors (passed directly as `img`, via the `hist_in` path) so that results can be verified without needing a full image. All edge cases and critical cases are covered in the test suite. Run them after loading the function first with `exec('intmax.sci', -1)`and then `exec('graythresh_test.sce', -1)`.
+The following 18 test cases use small histogram vectors (passed directly as `img`, via the `hist_in` path) so that results can be verified without needing a full image. All edge cases and critical cases are covered in the test suite. Run the test script: 
+
+```scilab
+exec('graythresh_test.sce', -1);
+```
 
 ### Test Case 1 — Otsu Thresholding on Bimodal Image
 
