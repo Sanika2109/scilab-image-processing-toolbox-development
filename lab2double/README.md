@@ -6,11 +6,26 @@
 The function serves as a wrapper around `lab2cls`, requesting conversion of the input L* a* b* data to the `double` class. The conversion produces a floating-point representation suitable for numerical computations, color-space transformations, and image-processing operations.
 
 The function accepts exactly one input argument and returns the converted L* a* b* image or colormap in `double` format.
+
 ## Calling Sequence:
 ```
 lab_double = lab2double(lab)
 ```
+## Dependencies
 
+The function depends on the following external file:
+
+| File | Purpose |
+|--------|---------|
+| `lab2cls.sci` | Converts L* a* b* data to the specified output class. |
+
+The dependency file must be loaded before executing `lab2double.sci`. The test script does this automatically:
+
+```scilab
+base = get_absolute_file_path("lab2double_test.sce");
+exec(base + "../lab2cls/lab2cls.sci", -1);
+exec(base + "lab2double.sci", -1);
+```
 ---
 ## Parameters:
 
@@ -43,38 +58,7 @@ lab_double = lab2double(lab)
 | `double()`  | Built-in (used internally by `lab2cls()`) | Converts numeric values to double representation. |
 
 ---
-## Algorithm:
 
-```text
-Start
-  |
-  v
-Receive Input: LAB
-  |
-  v
-Check Number of Input Arguments
-  |
-  v
-Is there exactly one input argument?
-  |
-  +-- No --> Generate Error Message
-  |             |
-  |             v
-  |            End
-  |
-  +-- Yes --> Call lab2cls(LAB, "double")
-                 |
-                 v
-          Convert LAB Data to Double Class
-                 |
-                 v
-          Return Converted LAB Image
-                 |
-                 v
-                End
-```
-                  
----
 ## Time & Space Complexity:
 
 **Time Complexity:** `O(M × N × C)`
@@ -175,7 +159,11 @@ lab2double()| 	double	| Floating-point representation
 ---
 ## Test Cases:
 
-The following 11 test cases cover valid L* a* b* colormaps, boundary values, special inputs, and error conditions.  Run them after loading the function first with `exec ('lab2cls.sci', -1)` and then `exec('lab2double_test.sce', -1)`.
+The following 11 test cases cover valid L* a* b* colormaps, boundary values, special inputs, and error conditions.  Run the test script:
+
+```scilab
+exec('lab2double_test.sce', -1);
+```
 
 ### Test Case: 1 — Typical uint8 LAB Image
 
