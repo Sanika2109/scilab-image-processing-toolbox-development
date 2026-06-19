@@ -1,22 +1,18 @@
 function [peaksnr, snr] = psnr(A, ref, peak)
 
-    // argn(2) is the Scilab equivalent of nargin
+    // Validate input arguments, size, and data type
     if argn(2) < 2 | argn(2) > 3 then
         error("psnr: Wrong number of input arguments.");
 
-    // size_equal(A, ref) replaced with element-wise size comparison
     elseif or(size(A) <> size(ref)) then
         error("psnr: A and REF must be of same size");
 
-    // class() replaced with typeof() in Scilab
     elseif typeof(A) <> typeof(ref) then
         error("psnr: A and REF must have same class");
     end
 
+    // Use the maximum value of the input class if PEAK is not provided
     if argn(2) < 3 then
-
-        // Octave: peak = getrangefromclass(A)(2)
-        // Scilab does not support indexing directly on function outputs
         peak = getrangefromclass(A);
         peak = peak(2);
 
@@ -24,46 +20,44 @@ function [peaksnr, snr] = psnr(A, ref, peak)
         error("psnr: PEAK must be a scalar value");
     end
 
+    // Convert integer inputs to double before calculations
     if isinteger(A) then
         A = double(A);
         ref = double(ref);
     end
 
+    // Compute Mean Squared Error between A and REF
     mse = immse(A, ref);
 
-    // Element-wise power operator .^ replaced by ^ since peak is scalar
+    // Peak Signal-to-Noise Ratio (PSNR)
     peaksnr = 10 * log10((peak^2) / mse);
 
-    // argn(1) is the Scilab equivalent of nargout
+    // Compute Signal-to-Noise Ratio (SNR) if requested
     if argn(1) > 1 then
 
-        // Octave:
-        // sumsq(A(:)) / numel(A)
-        // A(:), sumsq(), and numel() are implemented through helper functions
         snr = 10 * log10((sumsq(A(:)) / numel(A)) / mse);
 
     end
 
 endfunction
 
-
 // ----------------------------------------------------
 // Helper Functions
 // ----------------------------------------------------
 
-// Octave isinteger() equivalent
+// Returns true if x belongs to an integer data type
 function isint = isinteger(x)
     isint = or(typeof(x) == ["int8","uint8","int16","uint16","int32","uint32","int64","uint64"]);
 endfunction
 
 
-// Octave sumsq() equivalent
+// Computes the sum of squares of all elements
 function s = sumsq(x)
     s = sum(x(:).^2);
 endfunction
 
 
-// Octave numel() equivalent
+// Returns the total number of elements in x
 function n = numel(x)
     n = size(x, "*");
 endfunction
