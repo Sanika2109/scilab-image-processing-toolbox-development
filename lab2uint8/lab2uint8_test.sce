@@ -1,5 +1,5 @@
 base = get_absolute_file_path("lab2uint8_test.sce");
-exec(base + "../lab2uint8/lab2cls.sci", -1);
+exec(base + "../lab2cls/lab2cls.sci", -1);
 exec(base + "lab2uint8.sci", -1);
 
 // ==================================================
