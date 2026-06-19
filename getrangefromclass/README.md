@@ -1,17 +1,34 @@
 # getrangefromclass
 
 ## Description:
-`getrangefromclass` performs two-dimensional median filtering on a grayscale image.
+`getrangefromclass` returns the valid intensity range associated with the datatype of an image.
 
-Median filtering is a non-linear image enhancement technique commonly used to remove impulse noise (salt-and-pepper noise) while preserving image edges. For each pixel, the function replaces the pixel value with the median of the values within a specified neighborhood window.
+For integer image types, the function returns the minimum and maximum representable values of the datatype. For floating-point (`constant`) and boolean images, it returns the normalized intensity range `[0, 1]`.
 
-The function supports multiple padding methods to handle image boundaries, including zero, replicate, circular, reflect, and symmetric padding.
+The function is useful in image-processing algorithms that require knowledge of the valid intensity limits of an image class.
 ## Calling Sequence:
 ```
 r = getrangefromclass(img)
 ```
+## Dependencies
 
----
+The function depends on the following external files:
+
+| File | Purpose |
+|--------|---------|
+| `intmin.sci` | Returns the minimum representable value for an integer datatype. |
+| `intmax.sci` | Returns the maximum representable value for an integer datatype. |
+
+These dependency files must be loaded before `getrangefromclass.sci`. The test script does this automatically:
+
+```scilab
+base = get_absolute_file_path("getrangefromclass_test.sce");
+
+exec(base + "../intmin/intmin.sci", -1);
+exec(base + "../intmax/intmax.sci", -1);
+exec(base + "getrangefromclass.sci", -1);
+```
+
 ## Parameters:
 
 | Parameter | Type | Description |
@@ -48,56 +65,7 @@ r = getrangefromclass(img)
 | `double()`   | Built-in | Converts the output range to double precision.|
 | `or()`   | Built-in | Evaluates logical conditions involving multiple datatype comparisons.|
 | `msprintf()` | Built-in | Formats error messages for unsupported image classes.      |
-
----
-## Algorithm:
-
-```text
-Start
-  |
-  v
-Receive Input Image (IMG)
-  |
-  v
-Validate Number of Input Arguments
-  |
-  v
-Determine Datatype using typeof()
-  |
-  v
-Is Integer Type?
-  |
-  +-- Yes --> Get intmin() and intmax()
-  |              |
-  |              v
-  |       Convert Range to Double
-  |              |
-  |              v
-  |           Return r
-  |
-  +-- No --> Is Boolean or Constant Type?
-                 |
-                 +-- Yes --> Return [0,1]
-                 |              |
-                 |              v
-                 |             End
-                 |
-                 +-- No --> Unsupported Class?
-                                |
-                                +-- Yes --> Generate Error Message
-                                |              |
-                                |              v
-                                |             End
-                                |
-                                +-- No --> Convert Range to Double
-                                               |
-                                               v
-                                            Return r
-                                               |
-                                               v
-                                              End
-```
-                  
+  
 ---
 ## Time & Space Complexity:
 
@@ -180,7 +148,11 @@ Datatype
 ---
 ## Test Cases:
 
-The following 15 test cases support image classes, boundary conditions, and invalid inputs. Run them after loading the function first with `exec ('intmin.sci', -1)` and `exec ('intmax.sci', -1)` and then with `exec ('getrangefromclass_test.sce', -1)`.
+The following 15 test cases support image classes, boundary conditions, and invalid inputs. Run the test script:
+
+```scilab
+exec("getrangefromclass_test.sce", -1);
+```
 
 ### Test Case: 1 — uint8 Image
 
