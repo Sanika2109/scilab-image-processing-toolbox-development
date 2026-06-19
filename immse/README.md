@@ -46,64 +46,6 @@ mse = immse(A, B)
 | `double()` | Built-in | Converts input arrays to double precision before arithmetic operations.      |
 | `mean()`  | Built-in | Computes the average value of the squared differences.      |
 
-
----
-## Algorithm
-
-```text
-┌─────────────────────┐
-│        Start        │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Receive Inputs      │
-│       A and B       │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Validate Inputs     │
-│ • Two arguments     │
-│ • Non-empty arrays  │
-│ • Same dimensions   │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Convert Inputs to   │
-│ Double Precision    │ 
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Compute Difference  │
-│        A - B        │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Square Each         │
-│ Difference Element  │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Compute Mean of     │
-│ Squared Differences │ 
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Return MSE Value    │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│         End         │
-└─────────────────────┘
-```
-
 ---
 ## Time & Space Complexity:
 
@@ -187,7 +129,11 @@ then:
 The larger the differences between corresponding elements, the larger the MSE value.
 ## Test Cases:
 
-The following 12 test cases cover valid inputs, boundary conditions, numerical precision checks, and error handling scenarios. Run them after loading the function with `exec('immse_test.sce', -1)`.
+The following 12 test cases cover valid inputs, boundary conditions, numerical precision checks, and error handling scenarios. Run the test script:
+
+```scilab
+exec('immse_test.sce', -1);
+```
 
 ### Test Case: 1 — Identical images
 
