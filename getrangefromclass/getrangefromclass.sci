@@ -11,11 +11,7 @@ function r = getrangefromclass(img)
     if isinteger(img) then
         r = [intmin(cl) intmax(cl)];
 
-    // Octave class names "double" and "logical" correspond to
-    // typeof() values "constant" and "boolean" in Scilab.
-    // Scilab doesn't have a "single" datatype
-    // strcmp() causes a size-mismatch error for scalar-to-vector string comparisons in Scilab.
-    // Therefore, element-wise comparison with or() is used instead.
+// Handle floating-point and boolean image types.
     elseif or(cl == ["constant" "boolean"]) then
         r = [0 1];
     else
