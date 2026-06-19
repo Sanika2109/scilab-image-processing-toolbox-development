@@ -6,12 +6,30 @@
 PSNR is a widely used image quality metric that measures the similarity between an original image and a reconstructed, compressed, or processed image. It is expressed in decibels (dB) and is derived from the Mean Squared Error (MSE) between corresponding pixels.
 
 Higher PSNR values indicate greater similarity between the two images, while lower values indicate greater distortion.
+
 ## Calling Sequence:
 ```
 p = psnr(A, B) 
 p = psnr(A, B, peak)
 ```
+## Dependencies
 
+The function relies on the following files:
+
+| File | Purpose |
+|--------|---------|
+| `immse.sci` | Computes the Mean Squared Error (MSE) between two images or matrices. |
+| `getrangefromclass.sci` | Determines the valid intensity range associated with an image datatype. |
+
+These dependency files must be loaded before executing `psnr.sci`. The test script does this automatically:
+
+```scilab
+base = get_absolute_file_path("psnr_test.sce");
+
+exec(base + "../immse/immse.sci", -1);
+exec(base + "../getrangefromclass/getrangefromclass.sci", -1);
+exec(base + "psnr.sci", -1);
+```
 ---
 ## Parameters:
 
@@ -33,6 +51,8 @@ p = psnr(A, B, peak)
 | `diff`            | Local         | Matrix       | Difference between corresponding elements of `A` and `B`.    |
 | `mse`            | Local         | Double       | Mean Squared Error between the two images.   |
 | `p`            | Output         | Double       | Computed PSNR value in decibels.   |---
+
+---
 ## Helper Functions
 
 | Function   | Type     | Purpose                                                                               |
@@ -45,64 +65,6 @@ p = psnr(A, B, peak)
 | `mean()`  | Built-in | Computes the average value of the squared differences.|
 | `log10()`   | Built-in | Computes the base-10 logarithm required for PSNR.|
 
-
----
-## Algorithm
-
-```text
-┌─────────────────────┐
-│        Start        │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Receive Inputs      │
-│    A, B and peak    │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Verify Dimensions   │
-│ of A and B          │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Convert Inputs to   │
-│ Double              │ 
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐ 
-│ Assign Default Peak │ 
-│ Value if Necessary  │ 
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Compute MSE         │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Is MSE = 0 ?        │
-└──────┬───────┬──────┘ 
-       │Yes    │No 
-       ▼       ▼
-┌──────────┐ ┌─────────────────┐ 
-│ PSNR=∞   │ │ Compute PSNR    │ 
-└────┬─────┘ │ Using Formula   │  
-     │       └────────┬────────┘ 
-     ▼                ▼
-┌─────────────────────┐
-│ Return PSNR Value   │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│         End         │
-└─────────────────────┘
-```
                   
 ---
 ## Time & Space Complexity:
@@ -197,7 +159,11 @@ Lower MSE corresponds to higher PSNR.
 
 ## Test Cases:
 
-The following 12 test cases cover valid inputs, boundary conditions, numerical precision, custom peak values, and special cases such as identical images and random matrices. Run them after loading the function first with `exec('immse.sci', -1)` and `exec('getrangefromclass.sci', -1)` and then with `exec('psnr_test.sce', -1)`.
+The following 12 test cases cover valid inputs, boundary conditions, numerical precision, custom peak values, and special cases such as identical images and random matrices. Run the test script:
+
+```scilab
+exec('psnr_test.sce', -1);
+```
 
 ### Test Case: 1 — Identical Images
 
