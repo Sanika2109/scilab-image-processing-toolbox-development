@@ -6,9 +6,26 @@
 The function serves as a wrapper around `lab2cls`, requesting conversion of the input L* a* b* data to the `uint16` class. The conversion maps the L* a* b* components into the valid range of unsigned 16-bit integers `(0–65535)`.
 
 The function accepts exactly one input argument and returns the converted L* a* b* image or colormap in `uint16` format.
+
 ## Calling Sequence:
 ```
 lab_uint16 = lab2uint16(lab)
+```
+
+## Dependencies
+
+The function depends on the following external file:
+
+| File | Purpose |
+|--------|---------|
+| `lab2cls.sci` | Converts L* a* b* data to the specified output class. |
+
+The dependency file must be loaded before executing `lab2uint16.sci`. The test script does this automatically:
+
+```scilab
+base = get_absolute_file_path("lab2uint16_test.sce");
+exec(base + "../lab2cls/lab2cls.sci", -1);
+exec(base + "lab2uint16.sci", -1);
 ```
 
 ---
@@ -43,38 +60,7 @@ lab_uint16 = lab2uint16(lab)
 | `uint16()`  | Built-in (used internally by `lab2cls()`) | Converts numeric values to unsigned 16-bit integer representation. |
 
 ---
-## Algorithm:
 
-```text
-Start
-  |
-  v
-Receive Input: lab
-  |
-  v
-Check Number of Input Arguments
-  |
-  v
-Is there exactly one input argument?
-  |
-  +-- No --> Generate Error Message
-  |             |
-  |             v
-  |            End
-  |
-  +-- Yes --> Call lab2cls(LAB, "uint16")
-                 |
-                 v
-          Convert LAB Data to uint16 Class
-                 |
-                 v
-          Return Converted LAB Image
-                 |
-                 v
-                End
-```
-                  
----
 ## Time & Space Complexity:
 
 **Time Complexity:** `O(M × N × C)`
@@ -160,7 +146,11 @@ The returned data:
 ---
 ## Test Cases:
 
-The following 10 test cases cover valid L* a* b* colormaps, boundary values, special inputs, and error conditions. Run them after loading the function first with `exec ('lab2cls.sci', -1)` and then `exec('lab2uint16_test.sce', -1)`.
+The following 10 test cases cover valid L* a* b* colormaps, boundary values, special inputs, and error conditions. Run the test script: 
+
+```scilab
+exec('lab2uint16_test.sce', -1);
+```
 
 ### Test Case: 1 — Typical Lab* Image
 
