@@ -50,83 +50,6 @@ area = bwarea(BW)
 | `sum()`    | Built-in | Counts occurrences of specific neighborhood configurations.                           |
 
 ---
-## Algorithm
-
-```text
-┌─────────────────────┐
-│        Start        │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Receive Input Image │
-│         BW          │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Validate Input      │
-│ • One argument      │
-│ • 2-D image         │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Convert Image to    │
-│ Binary Format       │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Define 2×2 Pattern  │
-│ Detection Kernels   │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Perform 2-D         │
-│ Convolution Using   │
-│ Pattern Kernels     │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Analyze Local 2×2   │
-│ Neighborhoods       │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Classify Pattern    │
-│ Types               │
-│ • Q1 (1 pixel)      │
-│ • QA (adjacent 2)   │
-│ • QD (diagonal 2)   │
-│ • Q3 (3 pixels)     │
-│ • Q4 (4 pixels)     │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Compute Weighted    │
-│ Area Estimate       │
-│ Using Pattern       │
-│ Coefficients        │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Return Estimated    │
-│ Binary Object Area  │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│         End         │
-└─────────────────────┘
-```
-
----
 ## Time & Space Complexity:
 
 Time Complexity: O(M × N), where M and N are the image dimensions.
@@ -260,7 +183,11 @@ Unlike `sum()`, `bwarea()` accounts for object boundaries and diagonal pixel con
 ---
 ## Test Cases:
 
-The following 11 test cases cover all the reuired valid, invalid and boundary cases. Run them after loading the function with `exec('bwarea.sce', -1)`.
+The following 11 test cases cover all the reuired valid, invalid and boundary cases. Run the test script:
+
+```scilab 
+exec('bwarea.sce', -1)`.
+```
 
 ### Test Case: 1 — Empty Image
 
