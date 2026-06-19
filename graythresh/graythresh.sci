@@ -37,9 +37,6 @@ function varargout = graythresh(img, algo, varargin)
 
 // SIMPLE MEAN THRESHOLD METHOD
 
-// Octave returns the mean threshold in varargout{1}.
-// In Scilab, outputs are stored in a list, so the equivalent
-// behavior is achieved by returning list(mean(...)).
     if convstr(algo, "l") == "mean" then
        varargout = list(mean(im2double(img)(:)));
        return;
@@ -60,12 +57,6 @@ function varargout = graythresh(img, algo, varargin)
         end
 
     // Build histogram
-        
-    // Octave uses:
-    // ihist = hist(img(:), 0:intmax(class(img)))
-    // to count occurrences of every possible integer intensity value.
-    // Scilab does not provide identical histogram behavior for integer classes,
-    // so the histogram is constructed explicitly by counting pixel occurrences.
         
         nbins = intmax(typeof(img)) + 1;
         ihist = zeros(1, nbins);
@@ -125,26 +116,10 @@ function varargout = graythresh(img, algo, varargin)
     if numel(ihist) > 1 then
        thresh(1) = double(thresh(1)) / (numel(ihist) - 1);
     end
-    
-    // Octave compatibility note:
-   // In the original Octave implementation, threshold values are stored in a
-   // cell array and copied individually to varargout using:
-  //   for i = 1:numel(thresh)
-  //     varargout{i} = thresh{i};
-  //   end
-  // In Scilab, thresh is implemented as a list, which naturally stores all
- // return values. Assigning `varargout = thresh` preserves the same behavior
- // without requiring explicit element-wise copying.
  
     varargout = thresh;
 
 endfunction
-
-// Octave translation note:
-// Thresholding algorithms in the original Octave implementation return
-// values through cell arrays. Scilab does not support cell arrays, so a
-// list is initialized and used as the equivalent container to maintain a
-// consistent return format across all graythresh algorithms.
 
 // OTSU THRESHOLDING METHOD
 // Finds a threshold that minimizes variance within foreground and background.
@@ -241,11 +216,6 @@ function T = maxentropy(y)
     T = list();
 
     n = numel (y) - 1;
-    
-    // Octave compatibility note:
-    // The original implementation disables divide-by-zero warnings locally.
-    // Scilab does not support the same warning control syntax, so this call
-    // has been omitted.
     
     //warning ("off", "Octave:divide-by-zero", "local");
     
@@ -406,11 +376,6 @@ function Tout = minerror_iter(y, T)
     // Previous threshold value (for convergence check)
     Tprev = %nan;
     
-     // Octave compatibility note:
-    // The original implementation disables divide-by-zero warnings locally.
-    // Scilab does not support the same warning control syntax, so this call
-    // has been omitted.
-    
     // warning ("off", "Octave:divide-by-zero", "local");
     
     // Global histogram statistics
@@ -507,10 +472,6 @@ function Tout = maxlikelihood(y)
         Tout(1) = T;
         return;
     end
-
-   // Octave uses a do...until loop. Since Scilab does not support this
-   // construct, it is translated as an infinite while loop with an
-   // explicit break when the convergence criterion is satisfied.
     
     while %t
 
@@ -773,7 +734,7 @@ function H = hconvhull(h)
             x = i - K(k);
             y = h(i) - h(K(k));
 
-            theta(i - K(k)) = atan(y, x); // Scilab equivalent of atan2(y,x)
+            theta(i - K(k)) = atan(y, x); 
 
         end
 
@@ -807,9 +768,6 @@ function x = negativeE(y, j)
 
     y = y(1:j+1);
     
-// Octave compatibility note:
-// Logical indexing (y(y~=0)) is translated using find(), since Scilab
-// does not support MATLAB/Octave-style logical indexing in the same form.
 
     // Keep only nonzero elements to avoid log issues
     y = y(find(y <> 0));
