@@ -151,7 +151,7 @@ Datatype
 The following 15 test cases support image classes, boundary conditions, and invalid inputs. Run the test script:
 
 ```scilab
-exec("getrangefromclass_test.sce", -1);
+exec('getrangefromclass_test.sce', -1);
 ```
 
 ### Test Case: 1 — uint8 Image
