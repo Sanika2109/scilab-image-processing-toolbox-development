@@ -12,18 +12,11 @@ function lab = lab2cls(lab, out_cls)
     elseif nd == 3 & sz(3) == 3 then
         was_image = %t;
        
-// Octave compatibility:
-// reshape (lab, [sz(1)*sz(2) 3]) is implemented with matrix(lab, sz(1)*sz(2), 3).
-// Both use column-major storage, so element ordering is preserved.
         lab = matrix(lab, sz(1)*sz(2), 3);
 
     // MxNx3xK image
     elseif nd == 4 & sz(3) == 3 then
         was_image = %t;
-
-// Octave compatibility:
-// reshape (lab, [sz(1)*sz(2) 3 sz(4)]) is implemented using matrix(lab, [sz(1)*sz(2), 3, sz(4)]).
-// Column-major ordering matches Octave reshape behavior.
 
         lab = matrix(lab, [sz(1)*sz(2), 3, sz(4)]);
 
@@ -38,11 +31,6 @@ function lab = lab2cls(lab, out_cls)
     // =====================================================
     // double / single output
     // =====================================================
-    
-// Octave compatibility:
-// Octave handles "double" and "single" in a shared code path.
-// Scilab separates them because select/case does not support
-// Octave's grouped case syntax.
 
     case "double" then
 
@@ -72,9 +60,7 @@ function lab = lab2cls(lab, out_cls)
 
     case "single" then
 
-// Octave compatibility:
 // Scilab has no native single-precision image class handling
-// equivalent to Octave's cast(...,"single").
 // Values are converted to double and processed identically.
         lab = double(lab);
 
@@ -113,10 +99,8 @@ function lab = lab2cls(lab, out_cls)
           lab(:,1,:) = lab(:,1,:) * (255 / 100);
           lab(:,2:3,:) = lab(:,2:3,:) + 128;
           
-// Octave compatibility:
-// Octave uint8() performs saturation when converting from double.
-// Explicit clipping is added here before uint8 conversion to ensure
-// identical behavior across Scilab versions.
+// Explicit clipping is added here before uint8 conversion to 
+// perform saturation when converting from double.
 
           idx = isnan(lab);
           lab(idx) = 255;
@@ -128,10 +112,8 @@ function lab = lab2cls(lab, out_cls)
 
     case "uint16" then
         
-// Octave compatibility:
-// Octave performs division followed by uint8 conversion.
 // Explicit double conversion avoids integer arithmetic differences
-// between Octave and Scilab.
+// when performed division followed by uint8 conversion.
             lab = uint8(double(lab) / 256);
 
         case "uint8" then
@@ -158,9 +140,8 @@ function lab = lab2cls(lab, out_cls)
             lab(:,2:3,:) = lab(:,2:3,:) + 128;
             lab(:,2:3,:) = lab(:,2:3,:) * (65280 / 255);
             
-// Octave compatibility:
 // Explicit clipping and rounding are performed before uint16
-// conversion to reproduce Octave saturation behavior reliably.
+// conversion to reproduce saturation behavior reliably.
 
             idx = isnan(lab);
             lab(idx) = 65535;
@@ -195,9 +176,6 @@ function lab = lab2cls(lab, out_cls)
 
     // Restore original image shape
     if was_image then
-// Octave compatibility:
-// matrix(lab,sz) is used as the equivalent of reshape(lab,sz).
-// Element ordering remains identical due to column-major storage.
         lab = matrix(lab, sz); 
     end
 
@@ -205,12 +183,8 @@ endfunction
 
 //Helper function
 
-// Octave compatibility helper:
-// Provides an Octave-like class() function.
 // Scilab numeric arrays are mapped to "double" and image integer
-// classes are preserved. The Octave "single" class is not
-// distinguished because this implementation represents single
-// precision data using double precision values.
+// classes are preserved. 
 
 function cls = class(x)
 
