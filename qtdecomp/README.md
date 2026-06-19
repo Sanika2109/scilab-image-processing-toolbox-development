@@ -74,95 +74,6 @@ S = qtdecomp(I, fun, ...)
 | `fun(b, varargin(:))` | User-supplied | Custom decision function for `decision_method == 2`; receives the full stack of candidate blocks and any extra arguments, and must return a boolean vector of split decisions. |
 
 ---
-## Algorithm
-
-```text
-┌──────────────────────────────┐
-│             Start            │
-└───────────────┬──────────────┘
-                │
-                ▼
-┌──────────────────────────────┐
-│ Receive Inputs:              │
-│ I, p1 (optional), varargin   │
-└───────────────┬──────────────┘
-                │
-                ▼
-┌──────────────────────────────┐
-│ Validate Arguments           │
-│ • at least 1 input           │
-│ • I must be square           │
-└───────────────┬──────────────┘
-                │
-                ▼
-┌─────────────────────────────────┐
-│ Determine Decision Method       │
-│ • no p1        → uniform-value  │
-│ • p1 = function → custom fun    │
-│ • p1 = numeric  → threshold mode│
-│   (rescaled for uint8/uint16)   │
-│   + optional [mindim, maxdim]   │
-└───────────────┬─────────────────┘
-                │
-                ▼
-┌─────────────────────────────────┐
-│ Pre-Split if maxdim Forces It   │
-│ • initial_splits =              │
-│   ceil(log2(size/maxdim))       │
-│ • must divide evenly, and result│
-│   must still be ≥ mindim        │
-│ • build initial offsets grid    │
-└───────────────┬─────────────────┘
-                │
-                ▼
-        ┌──────────────────────┐
-        │  Main Quadtree Loop: │
-        │  while not finished  │
-        │  and offsets remain  │
-        └──────────┬───────────┘
-                   │
-                   ▼
-        ┌─────────────────────────┐
-        │ Can curr_size still     │
-        │ halve and stay ≥ mindim?│
-        └─┬──────────────────┬────┘
-        no│                  │ yes
-          ▼                  ▼
-┌────────────────────┐  ┌─────────────────────────────────┐
-│ Mark all current   │  │ Evaluate Split Decision db      │
-│ offsets as terminal│  │ for every current block:        │
-│ blocks at curr_size│  │ • method 0: uniform test        │
-│ → finished = true  │  │ • method 1: range ≤ threshold   │
-└────────────────────┘  │ • method 2: fun(stack of blocks)│
-                        └───────────────┬──────────────── ┘
-                                        │
-                                        ▼
-                            ┌────────────────────────────────┐
-                            │ Finalize Non-Split Blocks (~db)│
-                            │ → append to res at curr_size   │
-                            └───────────────┬────────────────┘
-                                            │
-                                            ▼
-                            ┌─────────────────────────────────┐
-                            │ Halve curr_size                 │
-                            │ Generate 4 child offsets per    │
-                            │ block marked for splitting (db) │
-                            │ → new offsets for next iteration│
-                            └───────────────┬─────────────────┘
-                                            │
-                                            └──────────► (loop back)
-                                            │
-                                            ▼
-                            ┌──────────────────────────────┐
-                            │ Build Sparse Matrix S        │
-                            │ from res(:,1:2) and res(:,3) │
-                            └───────────────┬──────────────┘
-                                            │
-                                            ▼
-                                   ┌────────────────┐
-                                   │       End      │
-                                   └────────────────┘
-```
 
 ### Decision Methods at a Glance
 
@@ -260,7 +171,11 @@ nnz(S) ≥ 1
 ---
 ## Test Cases:
 
-The following 20 test cases use small, hand-constructed images so that the expected decomposition can be verified by inspection. Run them after loading the function with `exec('qtdecomp.sce', -1)`.
+The following 20 test cases use small, hand-constructed images so that the expected decomposition can be verified by inspection. Run the test script:
+
+```scilab
+exec('qtdecomp_test.sce', -1);
+```
 
 ### Test Case: 1 — 1×1 Image
 
