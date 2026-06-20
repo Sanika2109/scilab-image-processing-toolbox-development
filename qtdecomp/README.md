@@ -359,11 +359,213 @@ S = full(qtdecomp(I,1));
 The larger threshold increases tolerance to variation and therefore reduces decomposition depth.
 
 ---
+### Test Case: 10 — Minimum Block Size Restriction
 
+Verifies that decomposition stops once the specified minimum block dimension is reached.
+
+```scilab
+S = full(qtdecomp(I, 0, 4));
+```
+
+**Expected output:** 
+* No block smaller than 4×4 is generated.
+* Recursive subdivision stops at the specified limit.
+* No 1×1 decomposition artifacts appear.
+
+**Observation:**
+The `mindim` parameter acts as a hard stopping criterion regardless of local image variation.
+
+---
+### Test Case: 11 — Minimum and Maximum Block Size Constraints
+
+Verifies simultaneous enforcement of minimum and maximum block dimensions.
+
+```scilab
+S = full(qtdecomp(I, 0, [2 4]));
+```
+
+**Expected output:** 
+* All generated blocks have dimensions between 2 and 4.
+* Blocks larger than 4 are forced to split.
+* Blocks smaller than 2 are not produced.
+
+**Observation:**
+This test validates correct handling of user-defined decomposition limits.
+
+---
+### Test Case: 12 — Regression Matrix A
+
+Verifies behavior using a representative benchmark image containing multiple intensity regions.
+
+```scilab
+S = full(qtdecomp(A));
+```
+
+**Expected output:** 
+* Mixed regions are subdivided.
+* Homogeneous regions remain intact.
+* Output is consistent with Octave behavior.
+
+**Observation:**
+This matrix contains both uniform and highly variable areas, making it useful for regression testing.
+
+---
+### Test Case: 13 — Regression Matrix A with Threshold = 5
+
+Verifies threshold-controlled decomposition on the benchmark matrix.
+
+```scilab
+S = full(qtdecomp(A,5));
+```
+
+**Expected output:** 
+* Fewer subdivisions than the default configuration.
+* Small variations within blocks are tolerated.
+
+**Observation:**
+Increasing the threshold reduces decomposition sensitivity.
+
+---
+### Test Case: 14 — Regression Matrix A with Threshold = 10
+
+Verifies decomposition with a highly permissive threshold.
+
+```scilab
+S = full(qtdecomp(A,10));
+```
+
+**Expected output:** 
+* Significantly fewer blocks than Tests 12 and 13.
+* Larger image regions remain unsplit.
+
+**Observation:**
+The larger threshold allows substantial intensity variation within a block before subdivision occurs.
+
+---
+### Test Case: 15 — Function Handle Criterion
+
+Verifies support for user-defined splitting criteria.
+
+```scilab
+function y = first_eq(B, varargin)
+    y = squeeze(B(1,1,:) <> 54);
+    y = y(:);
+endfunction
+
+S = full(qtdecomp(A, first_eq));
+```
+
+**Expected output:** 
+* Splitting decisions follow the custom function.
+* Blocks whose first element differs from 54 are subdivided.
+* Standard threshold logic is bypassed.
+
+**Observation:**
+This test validates the function-handle mode and custom decomposition behavior.
+
+---
+### Test Case: 16 — Non-Square Image
+
+Verifies input validation for unsupported image dimensions.
+
+```scilab
+I = rand(4,5);
+qtdecomp(I);
+```
+
+**Expected output:** 
+* An error is generated.
+* The function reports that the image must be square.
+
+**Observation:**
+Quadtree decomposition requires square images; therefore rectangular inputs must be rejected.
+
+---
+### Test Case: 17 — Invalid Dimension Limits
+
+Verifies validation of the `mindim` and `maxdim` parameters.
+
+```scilab
+I = eye(8,8);
+qtdecomp(I,0,[4 2]);
+```
+
+**Expected output:** 
+* An error is generated.
+* Invalid dimension limits are detected.
+
+**Observation:**
+The minimum block size cannot exceed the maximum block size.
+
+---
+### Test Case: 18 — Large Uniform Image
+
+Verifies scalability and efficient handling of large homogeneous images.
+
+```scilab
+I = ones(64,64);
+S = full(qtdecomp(I));
+```
+
+**Expected output:** 
+* Minimal decomposition occurs.
+* The image is represented using a single large block.
+* Execution remains efficient.
+
+**Observation:**
+Uniform images should not trigger recursive subdivision regardless of size.
+
+---
+### Test Case: 19 — Unsigned Integer Image
+
+Verifies behavior with integer-valued image data.
+
+```scilab
+I = uint8(ones(4,4)*10);
+S = full(qtdecomp(I, 0.1));
+```
+
+**Expected output:** 
+* Integer image types are accepted.
+* Decomposition behaves consistently with floating-point inputs.
+* No unnecessary splitting occurs.
+
+**Observation:**
+The image is perfectly uniform, so datatype conversion should not affect the result.
+
+---
+### Test Case: 20 — Sparse Output Structure
+
+Verifies that the decomposition output is returned in sparse format.
+
+```scilab
+I = [
+1 1 2 2;
+1 1 2 2;
+3 3 4 4;
+3 3 4 4
+];
+
+S = qtdecomp(I);
+
+disp(typeof(S));
+```
+
+**Expected output:** 
+* The output object is sparse.
+* Converting to full format correctly reconstructs the decomposition matrix.
+
+**Observation:**
+`qtdecomp` stores block information sparsely to reduce memory consumption while preserving the complete decomposition structure.
+
+---
 ### Test Results
 
-Each test case can be checked by comparing the nonzero entries of `S` (their positions and values) against the expected block layout described above; mismatches indicate a regression in either the decision-rule evaluation or the offset/child-generation logic.
+The file qtdecomp_Test_Results.pdf contains the output generated for each test case, including:
 
+* Original input matrix.
+* Output image matrix
+* Error message generated for invalid cases
 ---
 
 ## Compatibility Notes
