@@ -2,145 +2,147 @@ base = get_absolute_file_path("lab2uint8_test.sce");
 exec(base + "../lab2cls/lab2cls.sci", -1);
 exec(base + "lab2uint8.sci", -1);
 
+// Load test image
+DogImg = imread("dog.jpg");
+
 // ==================================================
-// Test 1: Typical L*a*b* image
+// Test 1: Real LAB Image 
 // ==================================================
-disp("Test 1: Typical L*a*b* Image");
-lab = cat(3, ...
-          [50 75; 25 100], ...
-          [0 20; -20 40], ...
-          [0 -30; 30 60]);
-disp("Input type:", typeof(lab));
+disp("Test 1: Real LAB Image from rgb2lab");
+
+rgb = DogImg;
+lab = rgb2lab(rgb);
+
 out = lab2uint8(lab);
-disp("Output type:", typeof(out));
-disp("Output:");
-disp(out);
+
+disp("Input type:"); disp(typeof(lab));
+disp("Output type:"); disp(typeof(out));
+disp("Output size:"); disp(size(out));
+
 mprintf("\n");
 
 
 // ==================================================
-// Test 2: Minimum valid L*a*b* values (uint8 Input)
+// Test 2: Minimum valid double LAB
 // ==================================================
-disp("Test 2: Minimum Valid L*a*b* Values (uint8 Input)");
-lab = cat(3, ...
-          uint8(zeros(2,2)), ...
-          uint8(zeros(2,2)), ...
-          uint8(zeros(2,2)));
-disp("Input type:", typeof(lab));
-out = lab2uint8(lab);
-disp("Output type:", typeof(out));
-disp("Output:");
-disp(out);
-mprintf("\n");
-
-
-// ==================================================
-// Test 3: Maximum valid L*a*b* values (uint16 Input)
-// ==================================================
-disp("Test 3: Maximum Valid L*a*b* Values (int16 Input)");
-lab = cat(3, ...
-          uint16(65280*ones(2,2)), ...
-          uint16(65280*ones(2,2)), ...
-          uint16(65280*ones(2,2)));
-disp("Input type:", typeof(lab));
-out = lab2uint8(lab);
-disp("Output type:", typeof(out));
-disp("Output:");
-disp(out);
-mprintf("\n");
-
-
-// ==================================================
-// Test 4: Floating-point values
-// ==================================================
-disp("Test 4: Floating Point Values");
-lab = cat(3, ...
-          [10.5 20.2; 30.8 40.1], ...
-          [1.5 -2.3; 5.7 -8.9], ...
-          [15.4 -12.7; 25.8 -30.6]);
-disp("Input type:", typeof(lab));
-out = lab2uint8(lab);
-disp("Output type:", typeof(out));
-disp("Output:");
-disp(out);
-mprintf("\n");
-
-
-// ==================================================
-// Test 5: uint8 Encoded L*a*b* Input
-// ==================================================
-disp("Test 5: uint8 Encoded L*a*b* Input");
+disp("Test 2: Minimum LAB (double)");
 
 lab = cat(3, ...
-          uint8([0 50; 75 100]), ...
-          uint8([0 128; 178 255]), ...
-          uint8([0 128; 178 255]));
-disp("Input type:", typeof(lab));
+          zeros(2,2), ...
+          -128*ones(2,2), ...
+          -128*ones(2,2));
+
 out = lab2uint8(lab);
-disp("Output type:", typeof(out));
-disp("Output:");
 disp(out);
+
 mprintf("\n");
 
 
 // ==================================================
-// Test 6: Single pixel L*a*b* value (uint16 Input)
+// Test 3: Maximum valid double LAB
 // ==================================================
-disp("Test 6: Single Pixel L*a*b* Value (uint16 Input)");
+disp("Test 3: Maximum LAB (double)");
+
 lab = cat(3, ...
-          uint16(32640), ...
-          uint16(32768), ...
-          uint16(32768));
-disp("Input type:", typeof(lab));
+          100*ones(2,2), ...
+          127*ones(2,2), ...
+          127*ones(2,2));
+
 out = lab2uint8(lab);
-disp("Output type:", typeof(out));
-disp("Output:");
 disp(out);
+
 mprintf("\n");
 
 
 // ==================================================
-// Test 7: 3-D image with multiple pixels
+// Test 4: Typical LAB values (double)
 // ==================================================
-disp("Test 7: 3-D L*a*b* Image");
-lab = rand(4,4,3);
-lab(:,:,1) = lab(:,:,1) * 100;
-lab(:,:,2) = lab(:,:,2) * 255 - 128;
-lab(:,:,3) = lab(:,:,3) * 255 - 128;
-disp("Input type:", typeof(lab));
-out = lab2uint8(lab);
-disp("Output type:", typeof(out));
-disp("Output:");
-disp(out);
-mprintf("\n");
+disp("Test 4: Typical LAB (double)");
 
-
-// ==================================================
-// Test 8: Out-of-Range L*a*b* Values (uint16 Input)
-// ==================================================
-disp("Test 8: Out-of-Range L*a*b* Values (uint16 Input)");
 lab = cat(3, ...
-          uint16([0 32768; 49152 65535]), ...
-          uint16([0 15234; 33425 61767]), ...
-          uint16([0 54678; 42252 65535]));
-disp("Input type:", typeof(lab));
+          [50 75;25 100], ...
+          [0 20;-20 40], ...
+          [0 -30;30 60]);
+
 out = lab2uint8(lab);
-disp("Output type:", typeof(out));
-disp("Output:");
 disp(out);
+
 mprintf("\n");
 
 
 // ==================================================
-// Test 9: Empty Input (should error)
+// Test 5: NaN handling
 // ==================================================
-disp("Test 9: Empty Input");
+disp("Test 5: NaN Handling");
+
+lab = cat(3, ...
+          [%nan 50;25 100], ...
+          [0 20;%nan 40], ...
+          [0 -30;30 %nan]);
+
+out = lab2uint8(lab);
+disp(out);
+
+mprintf("\n");
+
+
+// ==================================================
+// Test 6: Clipping (out-of-range double)
+// ==================================================
+disp("Test 6: Clipping behavior");
+
+lab = cat(3, ...
+          [-20 50;120 200], ...
+          [-200 0;100 300], ...
+          [-300 0;100 400]);
+
+out = lab2uint8(lab);
+disp(out);
+
+mprintf("\n");
+
+
+// ==================================================
+// Test 7: uint8 encoded LAB input
+// ==================================================
+disp("Test 7: uint8 LAB input");
+
+lab = cat(3, ...
+          uint8([0 128;200 255]), ...
+          uint8([0 128;200 255]), ...
+          uint8([0 128;200 255]));
+
+out = lab2uint8(lab);
+disp(out);
+
+mprintf("\n");
+
+
+// ==================================================
+// Test 8: uint16 encoded LAB input
+// ==================================================
+disp("Test 8: uint16 LAB input");
+
+lab = cat(3, ...
+          uint16([0 32768;49152 65280]), ...
+          uint16([0 32768;49152 65280]), ...
+          uint16([0 32768;49152 65280]));
+
+out = lab2uint8(lab);
+disp(out);
+
+mprintf("\n");
+
+
+// ==================================================
+// Test 9: Empty input (error case)
+// ==================================================
+disp("Test 9: Empty input");
 
 try
     lab = [];
     out = lab2uint8(lab);
-    disp("Output type:", typeof(out));
-    disp("Output:", out);
+    disp(out);
 catch
     disp(lasterror());
 end
@@ -149,15 +151,16 @@ mprintf("\n");
 
 
 // ==================================================
-// Test 10: Invalid 2-D uint8 Input (Should Error)
+// Test 10: Invalid dimensions (error case)
 // ==================================================
-disp("Test 10: Invalid 2-D uint8 Input (Should Error)");
+disp("Test 10: Invalid dimensions");
+
 try
-    lab = uint8([50 60; 70 80]);
+    lab = uint8([50 60;70 80]); // invalid 2-D input
     out = lab2uint8(lab);
-    disp("Output type:", typeof(out));
-    disp("Output:", out);
+    disp(out);
 catch
     disp(lasterror());
 end
+
 mprintf("\n");
