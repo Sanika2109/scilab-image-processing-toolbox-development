@@ -146,154 +146,156 @@ The following 10 test cases cover valid L* a* b* colormaps, boundary values, spe
 exec ('lab2uint8_test.sce', -1);
 ```
 
-### Test Case: 1 — Typical Lab* Image
+### Test Case: 1 — Real LAB Image from RGB
 
-Verifies conversion of a typical L* a* b* image containing valid L*, a* and b* values.
-
-```scilab
-lab = cat(3, ... 
-[50 75; 25 100], ... 
-[0 20; -20 40], ... 
-[0 -30; 30 60]); 
-
-out = lab2uint8(lab);
-```
-
-**Expected output:** `Returns a uint8 representation of the input L* a* b* image.`
-
----
-### Test 2: Minimum valid L*a*b* values (uint8 Input)
-
-Verifies conversion of L* a* b* values at the lower end of the nominal range.
+Verifies conversion using a real image converted from RGB to LAB.
 
 ```scilab
-lab = cat(3, ...
-          uint8(zeros(2,2)), ...
-          uint8(zeros(2,2)), ...
-          uint8(zeros(2,2)));
+rgb = DogImg;
+lab = rgb2lab(rgb);
 
 out = lab2uint8(lab);
+
 ```
 
-**Expected output:** `Returns uint8 values corresponding to the minimum valid L* a* b* range.`
+**Expected output:** `Returns a valid uint8 LAB image with same dimensions as input.`
 
 ---
-### Test Case: 3 — Maximum valid L*a*b* values (uint16 Input)
+### Test Case: 2 — Minimum Valid LAB (double)
 
-Verifies conversion of L* a* b* values at the upper end of the nominal range.
+Checks lower bound LAB values.
 
 ```scilab
 lab = cat(3, ...
-          uint16(65280*ones(2,2)), ...
-          uint16(65280*ones(2,2)), ...
-          uint16(65280*ones(2,2)));
+          zeros(2,2), ...
+          -128*ones(2,2), ...
+          -128*ones(2,2));
 
 out = lab2uint8(lab);
 ```
 
-**Expected output:** `Returns uint8 values corresponding to the maximum valid L* a* b* range.`
+**Expected output:** `Proper conversion with clamping/scaling of minimum LAB values.`
 
 ---
-### Test Case: 4 — Floating-Point Values
-Verifies conversion of non-integer L* a* b* values.
+### Test Case: 3 — Maximum Valid LAB (double)
 
-```scilab
-lab = cat(3, ... 
-[10.5 20.2; 30.8 40.1], ... 
-[1.5 -2.3; 5.7 -8.9], ... 
-[15.4 -12.7; 25.8 -30.6]); 
-
-out = lab2uint8(lab);
-```
-
-**Expected output:** `Returns a uint8 image after converting floating-point L* a* b* values.`
-
----
-### Test Case: 5 — uint8 Encoded L*a*b* Input
-
-Verifies conversion when the input consists of integer-valued L* a* b* data.
+Checks upper bound LAB values.
 
 ```scilab
 lab = cat(3, ...
-          uint8([0 50; 75 100]), ...
-          uint8([0 128; 178 255]), ...
-          uint8([0 128; 178 255]));
+          100*ones(2,2), ...
+          127*ones(2,2), ...
+          127*ones(2,2));
 
 out = lab2uint8(lab);
 ```
 
-**Expected output:** `Returns the equivalent uint8 representation.`
-
+**Expected output:** `Proper conversion of maximum LAB values into uint8 range.`
 
 ---
-### Test Case: 6 — Single pixel L*a*b* value (uint16 Input)
+### Test Case: 4 — Typical LAB Values (double)
 
-Verifies conversion of a single L* a* b* pixel.
+Verifies standard mid-range LAB values.
 
 ```scilab
 lab = cat(3, ...
-          uint16(32640), ...
-          uint16(32768), ...
-          uint16(32768));
-out = lab2uint8(lab);
-```
-
-**Expected output:** `Returns a single uint8 L* a* b* pixel.`
-
----
-### Test Case: 7 — 3-D Lab* Image
-
-Verifies conversion of a larger multidimensional L* a* b* image.
-
-```scilab
-lab = rand(4,4,3); 
-lab(:,:,1) = lab(:,:,1) * 100; 
-lab(:,:,2) = lab(:,:,2) * 255 - 128; 
-lab(:,:,3) = lab(:,:,3) * 255 - 128; 
+          [50 75;25 100], ...
+          [0 20;-20 40], ...
+          [0 -30;30 60]);
 
 out = lab2uint8(lab);
 ```
 
-**Expected output:** `Returns a uint8 image having the same dimensions as the input.`
+**Expected output:** `Correct uint8 representation of typical LAB values.`
 
 ---
-### Test Case: 8 — Out-of-Range L*a*b* Values (uint16 Input)
+### Test Case: 5 — NaN Handling
 
-Verifies behavior when L* a* b* values fall outside the nominal range.
+Checks robustness against invalid NaN values.
+
 ```scilab
 lab = cat(3, ...
-          uint16([0 32768; 49152 65535]), ...
-          uint16([0 15234; 33425 61767]), ...
-          uint16([0 54678; 42252 65535]));
+          [%nan 50;25 100], ...
+          [0 20;%nan 40], ...
+          [0 -30;30 %nan]);
 
 out = lab2uint8(lab);
 ```
 
-**Expected output:** `Behavior depends on the clipping and scaling rules implemented in lab2cls().`
+**Expected output:** `NaN values handled via clipping rules defined in lab2cls().`
+
 
 ---
-### Test Case: 9 — Empty Input
+### Test Case: 6 — Clipping Behavior (Out-of-Range Double)
 
-Verifies handling of an empty input array.
+Checks handling of extreme LAB values.
+
+```scilab
+lab = cat(3, ...
+          [-20 50;120 200], ...
+          [-200 0;100 300], ...
+          [-300 0;100 400]);
+
+out = lab2uint8(lab);
+```
+
+**Expected output:** `Values clipped to valid LAB range before conversion.`
+
+---
+### Test Case: 7 — uint8 Encoded LAB Input
+
+Validates uint8 LAB input handling.
+
+```scilab
+lab = cat(3, ...
+          uint8([0 128;200 255]), ...
+          uint8([0 128;200 255]), ...
+          uint8([0 128;200 255]));
+
+out = lab2uint8(lab);
+```
+
+**Expected output:** `Correct conversion of uint8-encoded LAB image.`
+
+---
+### Test Case: 8 — uint16 Encoded LAB Input
+
+Checks uint16 encoded LAB values.
+
+```scilab
+lab = cat(3, ...
+          uint16([0 32768;49152 65280]), ...
+          uint16([0 32768;49152 65280]), ...
+          uint16([0 32768;49152 65280]));
+
+out = lab2uint8(lab);
+```
+
+**Expected output:** `Proper scaling and conversion of uint16 LAB input.`
+
+---
+### Test Case: 9 — Empty Input (Error Case)
+
+Ensures function handles empty input safely.
 
 ```scilab
 lab = []; 
 out = lab2uint8(lab);
 ```
 
-**Expected output:** `Behavior depends on the validation performed by lab2cls().`
+**Expected output:** `Error handled by lab2cls() validation logic.`
 
 ---
-### Test Case: 10 — Invalid 2-D uint8 Input (Should Error)
+### Test Case: 10 — Invalid Dimensions (Error Case)
 
-Verifies error handling when the input is not a valid Lab* image.
+Checks invalid 2D input rejection.
 
 ```scilab
-lab = uint8([50 60; 70 80]);
+lab = uint8([50 60;70 80]); 
 out = lab2uint8(lab);
 ```
 
-**Expected output:** `Error generated by lab2cls() indicating invalid L* a* b* data.`
+**Expected output:** `Error indicating invalid LAB image format (handled by lab2cls()).`
 
 ---
 
@@ -301,11 +303,10 @@ out = lab2uint8(lab);
 
 The file `lab2uint8_Test_Results.pdf` contains the results obtained from executing all test cases, including:
 
-* Input L* a* b*  colormaps.
+* Input L* a* b* image.
 * Datatypes before and after conversion.
 * Converted `uint8` outputs.
 * Error handling outputs for invalid function calls.
-
 
 ---
 
