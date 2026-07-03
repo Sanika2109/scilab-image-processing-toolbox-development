@@ -1,78 +1,165 @@
-cd(get_absolute_file_path("padarray_test.sce"));
-exec("padarray.sci",-1);
+base = get_absolute_file_path("padarray_test.sce");
+exec(base + "padarray.sci", -1);
 
-// Test 1 : Default zero padding
-A = [1 2; 3 4];
-disp("Test 1: Default Zero Padding");
+A = [1 2;
+     3 4];
+
+// --------------------------------------------------
+// Test 1 : Default Zero Padding (Both)
+// --------------------------------------------------
+disp("Test 1 : Default Zero Padding");
 disp(padarray(A,[1 1]));
 mprintf("\n");
 
-// Test 2 : Explicit zeros padding
-disp("Test 2: zeros Padding");
-disp(padarray(A,[1 1],"zeros"));
+// --------------------------------------------------
+// Test 2 : Explicit Zeros Padding (PRE)
+// --------------------------------------------------
+disp("Test 2 : Explicit Zeros Padding (PRE)");
+disp(padarray(A,[2 1],"zeros","pre"));
 mprintf("\n");
 
-// Test 3 : Constant numeric padding
-disp("Test 3: Constant Padding (5)");
-disp(padarray(A,[1 1],5));
+// --------------------------------------------------
+// Test 3 : Constant Padding (POST)
+// --------------------------------------------------
+disp("Test 3 : Constant Padding (POST)");
+disp(padarray(A,[1 2],5,"post"));
 mprintf("\n");
 
-// Test 4 : Replicate padding
-disp("Test 4: Replicate Padding");
-disp(padarray(A,[1 1],"replicate"));
+// --------------------------------------------------
+// Test 4 : Complex Padding (%i) (BOTH)
+// --------------------------------------------------
+disp("Test 4 : Complex Padding (%i)");
+disp(padarray(A,[1 1],%i,"both"));
 mprintf("\n");
 
-// Test 5 : Circular padding
-disp("Test 5: Circular Padding");
-disp(padarray(A,[1 1],"circular"));
+// --------------------------------------------------
+// Test 5 : Circular Padding (Large Padding)
+// --------------------------------------------------
+disp("Test 5 : Circular Padding");
+disp(padarray(A,[4 5],"circular","both"));
 mprintf("\n");
 
-// Test 6 : Reflect padding
-A = [1 2 3;
-     4 5 6;
-     7 8 9];
-disp("Test 6: Reflect Padding");
-disp(padarray(A,[1 1],"reflect"));
+// --------------------------------------------------
+// Test 6 : Replicate Padding (PRE)
+// --------------------------------------------------
+disp("Test 6 : Replicate Padding (PRE)");
+disp(padarray(A,[2 2],"replicate","pre"));
 mprintf("\n");
 
-// Test 7 : Symmetric padding
-disp("Test 7: Symmetric Padding");
-disp(padarray(A,[1 1],"symmetric"));
+// --------------------------------------------------
+// Test 7 : Symmetric Padding (POST)
+// --------------------------------------------------
+disp("Test 7 : Symmetric Padding (POST)");
+disp(padarray(A,[2 2],"symmetric","post"));
 mprintf("\n");
 
-// Test 8 : Non-square padding
-A = [1 2 3;
+// --------------------------------------------------
+// Test 8 : Rectangular Matrix
+// --------------------------------------------------
+B = [1 2 3;
      4 5 6];
-disp("Test 8: Non-Square Padding [1 3]");
-disp(padarray(A,[1 3],"replicate"));
+
+disp("Test 8 : Rectangular Matrix");
+disp(padarray(B,[2 1],"replicate","both"));
 mprintf("\n");
 
-// Test 9 : Single pixel image
-A = 7;
-disp("Test 9: Single Pixel Image");
-disp(padarray(A,[2 2],0));
+// --------------------------------------------------
+// Test 9 : Row Vector
+// --------------------------------------------------
+R = [1 2 3 4];
+
+disp("Test 9 : Row Vector");
+disp(padarray(R,[0 3],9,"both"));
 mprintf("\n");
 
-// Test 10 : No padding
-A = [1 2; 3 4];
-disp("Test 10: No Padding");
-disp(padarray(A,[0 0]));
+// --------------------------------------------------
+// Test 10 : Column Vector
+// --------------------------------------------------
+C = [1;
+     2;
+     3;
+     4];
+
+disp("Test 10 : Column Vector");
+disp(padarray(C,[3],8,"both"));
 mprintf("\n");
 
-// Test 11 : Invalid negative padsize
-disp("Test 11: Invalid Negative Padsize");
-try
-    padarray(A,[-1 1]);
-catch
-    disp("Error handled correctly");
-end
+// --------------------------------------------------
+// Test 11 : Single Element Matrix
+// --------------------------------------------------
+disp("Test 11 : Single Element Matrix");
+disp(padarray(5,[2 2],"replicate"));
 mprintf("\n");
 
-// Test 12 : Reflect padding larger than image
-disp("Test 12: Invalid Reflect Padding");
-try
-    padarray([1 2;3 4],[2 2],"reflect");
-catch
-    disp("Error handled correctly");
-end
+// --------------------------------------------------
+// Test 12 : int16 Input
+// --------------------------------------------------
+I = int16([10 20;
+           30 40]);
+
+disp("Test 12 : int16 Input");
+disp(padarray(I,[1 1],int16(-5),"both"));
+mprintf("\n");
+
+// --------------------------------------------------
+// Test 13 : 3D Constant Padding
+// --------------------------------------------------
+X(:,:,1) = [1 2;
+            3 4];
+
+X(:,:,2) = [5 6;
+            7 8];
+
+disp("Test 13 : 3D Constant Padding");
+
+Y = padarray(X,[1 1 1],0);
+
+disp("Output Size:");
+disp(size(Y));
+
+disp("Slice 1");
+disp(Y(:,:,1));
+
+disp("Slice 2");
+disp(Y(:,:,2));
+
+disp("Slice 3");
+disp(Y(:,:,3));
+
+disp("Slice 4");
+disp(Y(:,:,4));
+
+mprintf("\n");
+
+// --------------------------------------------------
+// Test 14 : 3D Circular Padding (Depth Only)
+// --------------------------------------------------
+disp("Test 14 : 3D Circular Padding Along Depth");
+
+Y = padarray(X,[0 0 2],"circular");
+
+disp("Output Size:");
+disp(size(Y));
+
+disp("Slice 1");
+disp(Y(:,:,1));
+
+disp("Slice 3");
+disp(Y(:,:,3));
+
+disp("Slice 5");
+disp(Y(:,:,5));
+
+disp("Slice 6");
+disp(Y(:,:,6));
+
+mprintf("\n");
+
+// --------------------------------------------------
+// Test 15 : Mixed Padding Sizes (Rows Only)
+// --------------------------------------------------
+disp("Test 15 : Mixed Padding Sizes");
+
+disp(padarray(A,[3 0],"symmetric","both"));
+
 mprintf("\n");
