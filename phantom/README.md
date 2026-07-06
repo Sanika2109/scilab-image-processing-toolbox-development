@@ -386,8 +386,17 @@ phantom(64,64,64);
 
 Three arguments exceed the function's maximum of two (`rhs > 2`); this check happens immediately, before any individual argument is inspected.
 
-
 ---
+
+### Test Results
+
+The file `phantom_Test_Results.pdf` contains the output generated for each test case, including:
+* Input image matrix parameters.
+* Output blocks.
+* Error generated for invalid inputs.
+  
+---
+
 ## Compatibility Notes
 
 This function mirrors the behavior of Octave's Image Processing Toolbox `phantom` function, including the `model`/`E`/`n` argument forms, the two named ellipse sets, and the `[head, ellipses] = phantom(...)` output signature.
