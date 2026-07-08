@@ -13,7 +13,7 @@ area = bwarea(BW);
 figure();
 imshow(BW);
 
-disp("BW:");
+disp("Input(BW):");
 disp(BW);
 disp("Sum of pixels:");
 disp(sum(BW(:)));  
@@ -35,7 +35,7 @@ area = bwarea(BW);
 figure();
 imshow(BW);
 
-disp("BW:");
+disp("Input(BW):");
 disp(BW);
 disp("Sum of pixels:");
 disp(sum(BW(:)));  
@@ -56,7 +56,7 @@ area = bwarea(BW);
 figure();
 imshow(BW);
 
-disp("BW:");
+disp("Input(BW):");
 disp(BW);
 disp("Sum of pixels:");
 disp(sum(BW(:)));  
@@ -79,7 +79,7 @@ area=bwarea(BW);
 figure();
 imshow(BW);
 
-disp("BW:");
+disp("Input(BW):");
 disp(BW);
 disp("Sum of pixels:");
 disp(sum(BW(:)));  
@@ -102,7 +102,7 @@ area=bwarea(BW);
 figure();
 imshow(BW);
 
-disp("BW:");
+disp("Input(BW):");
 disp(BW);
 disp("Sum of pixels:");
 disp(sum(BW(:)));  
@@ -124,7 +124,7 @@ area=bwarea(BW);
 figure();
 imshow(BW);
 
-disp("BW:");
+disp("Input(BW):");
 disp(BW);
 disp("Sum of pixels:");
 disp(sum(BW(:)));  
@@ -146,7 +146,7 @@ area=bwarea(BW);
 figure();
 imshow(BW);
 
-disp("BW:");
+disp("Input(BW):");
 disp(BW);
 disp("Sum of pixels:");
 disp(sum(BW(:)));  
@@ -171,13 +171,14 @@ area=bwarea(BW);
 figure();
 imshow(BW);
 
-disp("BW:");
+disp("Input(BW):");
 disp(BW);
 disp("Sum of pixels:");
 disp(sum(BW(:)));  
 disp("Area:");
 disp(area);
 mprintf("\n");
+
 
 
 //--------------------------------------------------
@@ -206,7 +207,7 @@ subplot(1,2,2);
 imshow(BW);
 title("Binary");
 
-disp("BW (cropped view):");
+disp("Input(BW) (cropped view):");
 disp(BW(1:10, 1:10));
 disp("Sum of pixels:");
 disp(sum(BW(:)));  
@@ -231,7 +232,7 @@ area=bwarea(BW);
 figure();
 imshow(BW);
 
-disp("BW:");
+disp("Input(BW):");
 disp(BW);
 disp("Sum of pixels:");
 disp(sum(BW(:)));  
@@ -256,7 +257,7 @@ area=bwarea(BW);
 figure();
 imshow(BW);
 
-disp("BW:");
+disp("Input(BW):");
 disp(BW);
 disp("Sum of pixels:");
 disp(sum(BW(:)));  
