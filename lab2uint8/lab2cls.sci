@@ -5,26 +5,17 @@ function lab = lab2cls(lab, out_cls)
 
     was_image = %f;
 
-    // colormap shape (Mx3)
+    // Mx3 colormap
     if nd == 2 & sz(2) == 3 then
 
     // MxNx3 image
     elseif nd == 3 & sz(3) == 3 then
         was_image = %t;
-       
-// Octave compatibility:
-// reshape (lab, [sz(1)*sz(2) 3]) is implemented with matrix(lab, sz(1)*sz(2), 3).
-// Both use column-major storage, so element ordering is preserved.
         lab = matrix(lab, sz(1)*sz(2), 3);
 
-    // MxNx3xK image
+    // MxNx3xK image stack
     elseif nd == 4 & sz(3) == 3 then
         was_image = %t;
-
-// Octave compatibility:
-// reshape (lab, [sz(1)*sz(2) 3 sz(4)]) is implemented using matrix(lab, [sz(1)*sz(2), 3, sz(4)]).
-// Column-major ordering matches Octave reshape behavior.
-
         lab = matrix(lab, [sz(1)*sz(2), 3, sz(4)]);
 
     else
@@ -36,13 +27,8 @@ function lab = lab2cls(lab, out_cls)
     select out_cls
 
     // =====================================================
-    // double / single output
+    // Convert to double
     // =====================================================
-    
-// Octave compatibility:
-// Octave handles "double" and "single" in a shared code path.
-// Scilab separates them because select/case does not support
-// Octave's grouped case syntax.
 
     case "double" then
 
@@ -52,6 +38,7 @@ function lab = lab2cls(lab, out_cls)
 
         case "uint8" then
 
+            // Rescale L*, a*, and b* channels
             lab(:,1,:) = lab(:,1,:) * (100 / 255);
             lab(:,2:3,:) = lab(:,2:3,:) - 128;
 
@@ -63,7 +50,7 @@ function lab = lab2cls(lab, out_cls)
 
         case "double" then
 
-            // already double
+            // Already double
 
         otherwise
 
@@ -72,10 +59,9 @@ function lab = lab2cls(lab, out_cls)
 
     case "single" then
 
-// Octave compatibility:
-// Scilab has no native single-precision image class handling
-// equivalent to Octave's cast(...,"single").
-// Values are converted to double and processed identically.
+        // Scilab does not support native single-precision arrays.
+        // Processing is performed using double precision.
+
         lab = double(lab);
 
         select in_cls
@@ -93,7 +79,7 @@ function lab = lab2cls(lab, out_cls)
 
         case "double" then
 
-            lab = double(lab);
+            // Already double
 
         otherwise
 
@@ -102,7 +88,7 @@ function lab = lab2cls(lab, out_cls)
         end
 
     // =====================================================
-    // uint8 output
+    // Convert to uint8
     // =====================================================
     case "uint8" then
 
@@ -110,33 +96,26 @@ function lab = lab2cls(lab, out_cls)
 
         case "double" then
 
-          lab(:,1,:) = lab(:,1,:) * (255 / 100);
-          lab(:,2:3,:) = lab(:,2:3,:) + 128;
-          
-// Octave compatibility:
-// Octave uint8() performs saturation when converting from double.
-// Explicit clipping is added here before uint8 conversion to ensure
-// identical behavior across Scilab versions.
+            lab(:,1,:) = lab(:,1,:) * (255 / 100);
+            lab(:,2:3,:) = lab(:,2:3,:) + 128;
 
-          idx = isnan(lab);
-          lab(idx) = 255;
+            // Clip values to the valid uint8 range before conversion
+            idx = isnan(lab);
+            lab(idx) = 255;
 
-          lab(lab < 0) = 0;
-          lab(lab > 255) = 255;
+            lab(lab < 0) = 0;
+            lab(lab > 255) = 255;
 
-          lab = uint8(round(lab));
+            lab = uint8(round(lab));
 
-    case "uint16" then
-        
-// Octave compatibility:
-// Octave performs division followed by uint8 conversion.
-// Explicit double conversion avoids integer arithmetic differences
-// between Octave and Scilab.
+        case "uint16" then
+
+            // Reduce precision from 16-bit to 8-bit
             lab = uint8(double(lab) / 256);
 
         case "uint8" then
 
-            // Do nothing.
+            // Already uint8
 
         otherwise
 
@@ -145,7 +124,7 @@ function lab = lab2cls(lab, out_cls)
         end
 
     // =====================================================
-    // uint16 output
+    // Convert to uint16
     // =====================================================
     case "uint16" then
 
@@ -157,11 +136,8 @@ function lab = lab2cls(lab, out_cls)
 
             lab(:,2:3,:) = lab(:,2:3,:) + 128;
             lab(:,2:3,:) = lab(:,2:3,:) * (65280 / 255);
-            
-// Octave compatibility:
-// Explicit clipping and rounding are performed before uint16
-// conversion to reproduce Octave saturation behavior reliably.
 
+            // Clip values to the valid uint16 range before conversion
             idx = isnan(lab);
             lab(idx) = 65535;
 
@@ -169,14 +145,15 @@ function lab = lab2cls(lab, out_cls)
             lab(lab > 65535) = 65535;
 
             lab = uint16(round(lab));
-            
+
         case "uint8" then
 
+            // Expand 8-bit values to 16-bit
             lab = uint16(lab) * 256;
 
         case "uint16" then
 
-            // Do nothing.
+            // Already uint16
 
         otherwise
 
@@ -185,7 +162,7 @@ function lab = lab2cls(lab, out_cls)
         end
 
     // =====================================================
-    // unsupported output class
+    // Unsupported output class
     // =====================================================
     otherwise
 
@@ -193,28 +170,18 @@ function lab = lab2cls(lab, out_cls)
 
     end
 
-    // Restore original image shape
+    // Restore the original image dimensions
     if was_image then
-// Octave compatibility:
-// matrix(lab,sz) is used as the equivalent of reshape(lab,sz).
-// Element ordering remains identical due to column-major storage.
-        lab = matrix(lab, sz); 
+        lab = matrix(lab, sz);
     end
 
 endfunction
 
-//Helper function
-
-// Octave compatibility helper:
-// Provides an Octave-like class() function.
-// Scilab numeric arrays are mapped to "double" and image integer
-// classes are preserved. The Octave "single" class is not
-// distinguished because this implementation represents single
-// precision data using double precision values.
-
+// Helper function to determine the data class
 function cls = class(x)
 
     t = typeof(x);
+
     if t == "constant" then
         cls = "double";
     elseif t == "uint8" then
