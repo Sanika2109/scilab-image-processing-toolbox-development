@@ -83,17 +83,3 @@
       area = bwarea(BW)
 ##
       19
-## 12
-      BW = zeros(3,3,2);
-      area = bwarea(BW)
-##
-      Error : Input image must be a 2D image.
-## 13
-      area = bwarea()
-##
-      Error : One input argument required.
-## 14
-      BW = zeros(5,5);
-      area = bwarea(BW, 2)
-##
-      Error : Wrong number of input arguments.
