@@ -133,7 +133,7 @@ mprintf("\n");
 disp("Test 8: Invalid dimensions");
 
 try
-    lab = rand(3,3); // invalid (not Mx3 or MxNx3)
+    lab = rand(3,4); // invalid (not Mx3 or MxNx3)
     out = lab2single(lab);
 catch
     disp(lasterror());
