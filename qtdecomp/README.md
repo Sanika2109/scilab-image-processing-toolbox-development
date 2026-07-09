@@ -1,11 +1,9 @@
 # qtdecomp
-
-## Description:
-`qtdecomp` performs quadtree decomposition of a square image, recursively splitting it into smaller square blocks until each block satisfies a stopping criterion.
-
-Starting from the whole image, each square block is tested against a splitting rule; if the rule says "split," the block is divided into four equal quadrants, each of which is then tested again, recursively, until every remaining block either passes the rule or has reached the smallest allowed size (`mindim`). The result is encoded in a sparse matrix `S` of the same size as the input image, where each nonzero entry marks the top-left corner of a final (un-split) block and records that block's side length. Three splitting rules are supported: uniform-value blocks only (no second argument), a numeric intensity-range threshold, or a user-supplied decision function evaluated on stacks of candidate blocks.
-
-## Calling Sequence:
+## Description
+- The qtdecomp function performs quadtree decomposition of a square image, recursively splitting it into smaller square blocks until each block satisfies a stopping criterion.
+- The number of arguments passed must be at least 1.
+- The result is a sparse matrix `S` of the same size as the input image, where each nonzero entry marks the top-left corner of a final (un-split) block and records that block's side length. Three splitting rules are supported: uniform-value blocks only (no second argument), a numeric intensity-range threshold, or a user-supplied decision function.
+## Calling Sequence
 ```
 S = qtdecomp(I)
 S = qtdecomp(I, threshold)
@@ -14,619 +12,134 @@ S = qtdecomp(I, threshold, [mindim maxdim])
 S = qtdecomp(I, fun)
 S = qtdecomp(I, fun, ...)
 ```
-
----
-## Parameters:
-
-| Parameter | Type | Description |
-| :--- | :--- | :--- |
-| `I` | Matrix | **Input:** `2-D` square image to decompose (any numeric class; `uint8`/`uint16` receive special threshold scaling). |
-| `p1` | Double / Function | **Input (optional):** Either a numeric splitting threshold, or a function handle / inline function used as a custom split decision. If omitted, blocks are split until every remaining block is uniform (all pixels equal). |
-| `varargin(1)` (`dims`) | Double / Vector | **Input (optional, threshold mode only):** Either a single value `mindim`, or a two-element vector `[mindim maxdim]` bounding the allowed block sizes. Defaults to `mindim = 1`, `maxdim = size(I,1)`. |
-| `varargin(2:)` | Any | **Input (optional, function-handle mode only):** Additional arguments forwarded to `fun` on every call. |
-| `S` | Matrix (Sparse) | **Output:** Quadtree decomposition matrix, same size as `I`. `S(r,c) = d` marks `(r,c)` as the top-left corner of a final `d×d` block; all other entries are `0`. |
-
----
-## Variable Reference
-
-| Variable | Scope | Type | Description |
-| --- | --- | --- | --- |
-| `rhs` | Main | Integer | Number of input arguments supplied (`argn(2)`); must be at least `1`. |
-| `curr_size` | Main | Double | Side length of the block size currently being evaluated; starts at `size(I,1)` and halves at every quadtree level (or is reduced once up front if `maxdim` forces it). |
-| `mindim`, `maxdim` | Main | Double | Smallest and largest permitted block sizes; default to `1` and `size(I,1)` respectively. |
-| `decision_method` | Main | Integer | Selects the splitting rule: `0` = uniform-value test (no threshold given), `1` = numeric range threshold, `2` = user function handle. |
-| `fun` | Main | Function | The user-supplied decision function, only set when `decision_method == 2`. |
-| `threshold` | Main | Double | The numeric split threshold; rescaled by `255` or `65535` when `I` is `uint8`/`uint16`, to match the image's native intensity range. |
-| `res` | Main | Matrix | Accumulator of finalized blocks; each row is `[row, col, size]` for one terminal (un-split) block. |
-| `finished` | Main | Boolean | Set to `%t` once a quadtree level is reached where every remaining block must stop (cannot satisfy `curr_size/2 >= mindim` evenly). |
-| `offsets` | Main | Matrix | `N×2` matrix of `[row, col]` top-left corners of all blocks currently being evaluated at the current `curr_size`. |
-| `initial_splits` | Main | Double | Number of mandatory splits computed up front (`ceil(log2(curr_size/maxdim))`) to force the starting block size down to `maxdim` before the main loop begins. |
-| `divs` | Main | Double | `2^initial_splits`; the number of blocks per side after the mandatory pre-split. |
-| `els` | Main | Vector | Block-corner offsets along one axis after the mandatory pre-split, `[0:divs-1]*curr_size + 1`. |
-| `db` | Main | Boolean Vector | Decision vector for the current set of `offsets`: `%t` = split this block further, `%f` = keep it as a terminal block. |
-| `o`, `fo` | Main | Vector | Top-left and bottom-right corner coordinates of the block currently being tested for the split decision. |
-| `blk`, `t` | Main | Matrix / Vector | The pixel data of the candidate block (`decision_method == 0`), or its flattened form (`decision_method == 1`), used to test uniformity or intensity range. |
-| `b` | Main | 3-D Array | Stack of all candidate blocks at the current level (`curr_size × curr_size × N`), built for `decision_method == 2` and passed to `fun` in a single vectorized call. |
-| `rbc` | Main | Matrix | Bottom-right corner coordinates corresponding to each row of `offsets`, used to slice `I` when building `b`. |
-| `nd` | Main | Matrix | Subset of `offsets` for which `db` is `%f` (i.e. blocks that will not be split); appended to `res` at the current `curr_size`. |
-| `otemp` | Main | Matrix | Subset of `offsets` for which `db` is `%t` (i.e. blocks selected for subdivision into four children). |
-| `hs`, `zs` | Main | Matrix | Half-step and zero-step offset matrices used to generate the four children's corner coordinates from `otemp`. |
-| `x`, `v` | Main | Matrix / Vector | Final block coordinates (`res(:,1:2)`) and corresponding block sizes (`res(:,3)`), passed to `sparse()` to build `S`. |
-
----
-## Helper Functions
-
-| Function | Type | Purpose |
-| --- | --- | --- |
-| `argn()` | Built-in | Determines the number of input arguments supplied to the function (`argn(2)`). |
-| `error()` | Built-in | Raises an error and halts execution for invalid arguments or unsatisfiable size constraints. |
-| `issquare()` | Built-in | Verifies that `I` is a square matrix before decomposition begins. |
-| `typeof()` | Built-in | Distinguishes function handles / inline functions from numeric thresholds, and detects `uint8`/`uint16` image classes for threshold rescaling. |
-| `isreal()` | Built-in | Confirms that `p1` (and, where relevant, `dims`) is numeric rather than a function handle. |
-| `isvector()` | Built-in | Checks whether the third argument is a two-element `[mindim maxdim]` vector or a single scalar `mindim`. |
-| `ceil()`, `log2()` | Built-in | Compute the number of mandatory pre-splits needed to bring the initial block size down to `maxdim`. |
-| `modulo()` | Built-in | Checks divisibility of `curr_size` by `divs` (forced pre-split) and parity of `curr_size` (whether a level can still be halved). |
-| `kron()` | Built-in | Builds the full grid of row/column offsets for the mandatory pre-split, via Kronecker products of the 1-D offset vector `els`. |
-| `max()`, `min()` | Built-in | Used to test block uniformity (`decision_method == 0`) and intensity range (`decision_method == 1`). |
-| `find()` | Built-in | Selects the rows of `offsets` corresponding to blocks marked for splitting (`db`) versus blocks finalized (`~db`). |
-| `zeros()`, `ones()` | Built-in | Construct the candidate-block stack `b`, and the constant-size columns appended to `res`. |
-| `sparse()` | Built-in | Assembles the final sparse decomposition matrix `S` from block coordinates `x` and sizes `v`. |
-| `fun(b, varargin(:))` | User-supplied | Custom decision function for `decision_method == 2`; receives the full stack of candidate blocks and any extra arguments, and must return a boolean vector of split decisions. |
-
----
-
-### Decision Methods at a Glance
-
-| `decision_method` | Trigger | Split Rule |
-| --- | --- | --- |
-| `0` | No second argument supplied | Split unless every pixel in the block is identical (`max(blk) == min(blk)`). |
-| `1` | Numeric `p1` (threshold) | Split unless the block's intensity range (`max - min`) is `≤ threshold`. |
-| `2` | `p1` is a function handle / inline function | Split according to the boolean vector returned by `fun(stack_of_blocks, varargin(:))`. |
-
----
-## Time & Space Complexity:
-
-Let `M × M` be the size of the (square) image `I`, and let `L = log2(M)` be the maximum possible quadtree depth.
-
-Time Complexity: `O(M² · log M)` in the worst case — at each of up to `L` quadtree levels, every pixel belonging to a still-active block is touched once by the split-decision test (`max`/`min` over the block, or one call to `fun`), and the total pixel count examined per level is at most `M²`; summed over `O(log M)` levels this gives `O(M² log M)`. In the common case where most blocks terminate early (large uniform regions), actual runtime is much closer to `O(M²)`.
-
-Space Complexity: `O(M²)` — dominated by the output sparse matrix `S` (same dimensions as `I`) and, transiently, the candidate-block stack `b` in function-handle mode (`O(curr_size² · N)`, bounded by `O(M²)` per level).
-
----
-
-## Mathematical Foundation
-
-### Quadtree Recursion
-
-Given a square block `B` of side length `s` at top-left corner `(r, c)`:
-
-```text
-split(B) = true   if the chosen decision rule says so
-split(B) = false  if s/2 < mindim, or s is odd, or the rule says "stop"
-```
-
-If `split(B) = true`, `B` is replaced by four child blocks of side `s/2`:
-
-```text
-B₀₀ = (r,       c)
-B₀₁ = (r,       c + s/2)
-B₁₀ = (r + s/2, c)
-B₁₁ = (r + s/2, c + s/2)
-```
-
-each of which is recursively re-evaluated.
-
-### Decision Rule 0 — Uniform Value
-
-```text
-split(B) = false  iff  max(B) = min(B)
-```
-
-i.e. a block is left un-split only if every pixel within it has exactly the same value.
-
-### Decision Rule 1 — Intensity Range Threshold
-
-```text
-split(B) = false  iff  ( max(B) − min(B) ) ≤ T
-```
-
-where `T` is the supplied `threshold`, rescaled to `255·T` or `65535·T` when `I` is `uint8` or `uint16` respectively, so that a threshold expressed in `[0,1]` maps onto the image's native integer intensity range.
-
-### Decision Rule 2 — Custom Function
-
-```text
-db = fun(b, extra_args...)
-```
-
-where `b` is a `s × s × N` stack of every currently-candidate block at the current quadtree level, and `db` is an `N`-element boolean vector: `db(k) = true` means block `k` should be split.
-
-### Mandatory Pre-Split for `maxdim`
-
-If `maxdim < M`, the number of mandatory splits needed before the main loop begins is:
-
-```text
-initial_splits = ceil( log2(M / maxdim) )
-divs = 2^initial_splits
-curr_size = M / divs            (requires M mod divs = 0)
-```
-
-This guarantees no block larger than (approximately) `maxdim` is ever evaluated, independent of the chosen decision rule.
-
-### Output Encoding
-
-```text
-S(r, c) = s     if (r, c) is the top-left corner of a final block of side s
-S(r, c) = 0     otherwise
-
-sum over all final blocks of s² = M²     (the blocks exactly tile the image)
-```
-
-### Output Range
-
-```text
-mindim ≤ s ≤ maxdim     for every nonzero entry s of S
-nnz(S) ≥ 1
-```
-
----
-## Test Cases:
-
-The following 20 test cases use small, hand-constructed images so that the expected decomposition can be verified by inspection. Run the test script:
-
-```scilab
-exec('qtdecomp_test.sce', -1);
-```
-
-### Test Case: 1 — 1×1 Image
-
-Verifies that `qtdecomp` correctly handles the smallest possible image and returns a valid quadtree decomposition without attempting further subdivision.
-
-```scilab
-I = 1;
-S = full(qtdecomp(I));
-```
-
-**Expected output:** 
-* A valid decomposition matrix is returned.
-* No subdivision occurs.
-* The single pixel is represented as one block.
-
-**Observation:**
-Since the image contains only one pixel, no splitting is possible. The algorithm should terminate immediately and represent the image as a single quadtree block.
-
----
-### Test Case: 2 — Odd-Sized Identity Matrix (5×5)
-
-Verifies that non-power-of-two square images are correctly padded internally and decomposed.
-
-```scilab
-I = eye(5,5);
-S = full(qtdecomp(I));
-```
-
-**Expected output:** 
-* Decomposition succeeds without errors.
-* Internal padding is handled automatically.
-* Blocks containing diagonal transitions may be subdivided.
-
-**Observation:**
-The identity matrix contains strong intensity changes along the diagonal. The decomposition should split regions that contain both zero and nonzero values while preserving homogeneous regions.
-
----
-### Test Case: 3 — Even-Sized Identity Matrix (6×6)
-
-Verifies decomposition behavior for an even-sized square image that is not a power of two.
-
-```scilab
-I = eye(6,6);
-S = full(qtdecomp(I));
-```
-
-**Expected output:** 
-* Successful decomposition.
-* Internal resizing or padding is handled automatically.
-* Non-uniform regions are subdivided.
-
-**Observation:**
-The diagonal structure introduces local intensity variations that force subdivision around transition regions.
-
----
-### Test Case 4 — Power-of-Two Identity Matrix (8×8)
-
-Verifies standard quadtree decomposition on an image whose dimensions already satisfy power-of-two requirements.
-
-```scilab
-I = eye(8,8);
-S = full(qtdecomp(I));
-```
-
-**Expected output:** 
-* No padding is required.
-* Regions intersecting the diagonal are subdivided.
-* Uniform regions remain large blocks.
-
-**Observation:**
-This represents the ideal input size for quadtree decomposition and serves as a baseline validation case.
-
----
-### Test Case: 5 — Near-Uniform Image
-
-Verifies sensitivity to small localized intensity changes.
-
-```scilab
-I = ones(8,8);
-I(4:5,4:5) = 3;
-
-S = full(qtdecomp(I));
-```
-
-**Expected output:** 
-* Most of the image remains a large block.
-* The altered central region triggers local subdivision.
-* Splitting is concentrated near the intensity change.
-
-**Observation:**
-Only a small region differs from the background intensity. The quadtree should isolate that region while avoiding unnecessary subdivision elsewhere.
-
----
-### Test Case: 6 — Uniform Zero Image
-
-Verifies that a completely homogeneous image is not subdivided.
-
-```scilab
-I = zeros(8,8);
-S = full(qtdecomp(I));
-```
-
-**Expected output:** 
-* A single large block represents the image.
-* No recursive splitting occurs.
-* Splitting is concentrated near the intensity change.
-
-**Observation:**
-Since all pixels have identical values, the image satisfies the homogeneity criterion at the largest possible scale.
-
----
-### Test Case: 7 — Checkerboard Pattern
-
-Verifies decomposition of a highly nonuniform image.
-
-```scilab
-I = [
-0 1 0 1;
-1 0 1 0;
-0 1 0 1;
-1 0 1 0
-];
-
-S = full(qtdecomp(I));
-```
-
-**Expected output:** 
-* Extensive subdivision occurs.
-* Many blocks reach the minimum allowable size.
-* Fine image detail is preserved.
-
-**Observation:**
-Every neighboring pixel differs in intensity, forcing repeated subdivision throughout the image.
-
----
-### Test Case: 8 — Threshold = 0
-
-Verifies strict homogeneity testing.
-
-```scilab
-I = [
-1 1 1 1;
-1 1 1 1;
-1 1 2 2;
-1 1 2 2
-];
-
-S = full(qtdecomp(I,0));
-```
-
-**Expected output:** 
-* Any intensity variation triggers subdivision.
-* Mixed-value regions are recursively split.
-* Only perfectly uniform blocks remain unsplit.
-
-**Observation:**
-A threshold of zero enforces exact equality within every block.
-
----
-
-### Test Case: 9 — Threshold = 1
-
-Verifies relaxed decomposition behavior.
-
-```scilab
-I = [
-1 1 1 1;
-1 1 1 1;
-1 1 2 2;
-1 1 2 2
-];
-
-S = full(qtdecomp(I,1));
-```
-
-**Expected output:** 
-* Fewer subdivisions compared with Test Case 8.
-* Regions differing by at most one intensity level may remain unsplit.
-
-**Observation:**
-The larger threshold increases tolerance to variation and therefore reduces decomposition depth.
-
----
-### Test Case: 10 — Minimum Block Size Restriction
-
-Verifies that decomposition stops once the specified minimum block dimension is reached.
-
-```scilab
-S = full(qtdecomp(I, 0, 4));
-```
-
-**Expected output:** 
-* No block smaller than 4×4 is generated.
-* Recursive subdivision stops at the specified limit.
-* No 1×1 decomposition artifacts appear.
-
-**Observation:**
-The `mindim` parameter acts as a hard stopping criterion regardless of local image variation.
-
----
-### Test Case: 11 — Minimum and Maximum Block Size Constraints
-
-Verifies simultaneous enforcement of minimum and maximum block dimensions.
-
-```scilab
-S = full(qtdecomp(I, 0, [2 4]));
-```
-
-**Expected output:** 
-* All generated blocks have dimensions between 2 and 4.
-* Blocks larger than 4 are forced to split.
-* Blocks smaller than 2 are not produced.
-
-**Observation:**
-This test validates correct handling of user-defined decomposition limits.
-
----
-### Test Case: 12 — Regression Matrix A
-
-Verifies behavior using a representative benchmark image containing multiple intensity regions.
-
-```scilab
-S = full(qtdecomp(A));
-```
-
-**Expected output:** 
-* Mixed regions are subdivided.
-* Homogeneous regions remain intact.
-* Output is consistent with Octave behavior.
-
-**Observation:**
-This matrix contains both uniform and highly variable areas, making it useful for regression testing.
-
----
-### Test Case: 13 — Regression Matrix A with Threshold = 5
-
-Verifies threshold-controlled decomposition on the benchmark matrix.
-
-```scilab
-S = full(qtdecomp(A,5));
-```
-
-**Expected output:** 
-* Fewer subdivisions than the default configuration.
-* Small variations within blocks are tolerated.
-
-**Observation:**
-Increasing the threshold reduces decomposition sensitivity.
-
----
-### Test Case: 14 — Regression Matrix A with Threshold = 10
-
-Verifies decomposition with a highly permissive threshold.
-
-```scilab
-S = full(qtdecomp(A,10));
-```
-
-**Expected output:** 
-* Significantly fewer blocks than Tests 12 and 13.
-* Larger image regions remain unsplit.
-
-**Observation:**
-The larger threshold allows substantial intensity variation within a block before subdivision occurs.
-
----
-### Test Case: 15 — Function Handle Criterion
-
-Verifies support for user-defined splitting criteria.
-
-```scilab
-function y = first_eq(B, varargin)
-    y = squeeze(B(1,1,:) <> 54);
-    y = y(:);
-endfunction
-
-S = full(qtdecomp(A, first_eq));
-```
-
-**Expected output:** 
-* Splitting decisions follow the custom function.
-* Blocks whose first element differs from 54 are subdivided.
-* Standard threshold logic is bypassed.
-
-**Observation:**
-This test validates the function-handle mode and custom decomposition behavior.
-
----
-### Test Case: 16 — Non-Square Image
-
-Verifies input validation for unsupported image dimensions.
-
-```scilab
-I = rand(4,5);
-qtdecomp(I);
-```
-
-**Expected output:** 
-* An error is generated.
-* The function reports that the image must be square.
-
-**Observation:**
-Quadtree decomposition requires square images; therefore rectangular inputs must be rejected.
-
----
-### Test Case: 17 — Invalid Dimension Limits
-
-Verifies validation of the `mindim` and `maxdim` parameters.
-
-```scilab
-I = eye(8,8);
-qtdecomp(I,0,[4 2]);
-```
-
-**Expected output:** 
-* An error is generated.
-* Invalid dimension limits are detected.
-
-**Observation:**
-The minimum block size cannot exceed the maximum block size.
-
----
-### Test Case: 18 — Large Uniform Image
-
-Verifies scalability and efficient handling of large homogeneous images.
-
-```scilab
-I = ones(64,64);
-S = full(qtdecomp(I));
-```
-
-**Expected output:** 
-* Minimal decomposition occurs.
-* The image is represented using a single large block.
-* Execution remains efficient.
-
-**Observation:**
-Uniform images should not trigger recursive subdivision regardless of size.
-
----
-### Test Case: 19 — Unsigned Integer Image
-
-Verifies behavior with integer-valued image data.
-
-```scilab
-I = uint8(ones(4,4)*10);
-S = full(qtdecomp(I, 0.1));
-```
-
-**Expected output:** 
-* Integer image types are accepted.
-* Decomposition behaves consistently with floating-point inputs.
-* No unnecessary splitting occurs.
-
-**Observation:**
-The image is perfectly uniform, so datatype conversion should not affect the result.
-
----
-### Test Case: 20 — Sparse Output Structure
-
-Verifies that the decomposition output is returned in sparse format.
-
-```scilab
-I = [
-1 1 2 2;
-1 1 2 2;
-3 3 4 4;
-3 3 4 4
-];
-
-S = qtdecomp(I);
-
-disp(typeof(S));
-```
-
-**Expected output:** 
-* The output object is sparse.
-* Converting to full format correctly reconstructs the decomposition matrix.
-
-**Observation:**
-`qtdecomp` stores block information sparsely to reduce memory consumption while preserving the complete decomposition structure.
-
----
-### Test Results
-
-The file qtdecomp_Test_Results.pdf contains the output generated for each test case, including:
-
-* Original input matrix.
-* Output image matrix
-* Error message generated for invalid cases
----
-
-## Compatibility Notes
-
-This function is a Scilab translation of GNU Octave's `qtdecomp` function (from the Octave `image` package) and preserves the same three decision modes (uniform-value, threshold, and function-handle) and the same `[mindim maxdim]` size-restriction semantics.
-
-### Important Differences from GNU Octave
-
-* **Function-handle detection.** Octave uses `typeinfo()` to detect function handles and inline functions; this port uses Scilab's `typeof()`, checking for `"function"`, `"function handle"`, `"inline function"`, and `"fptr"` to cover variations across Scilab versions. Passing a function-like object whose `typeof()` doesn't match one of these strings will be misinterpreted as a numeric threshold and will likely error out at `isreal(p1)`.
-
-* **`find()` used for boolean selection.** Where Octave can index directly with a logical vector (`offsets(~db,:)`), this port explicitly calls `find(~db)` and `find(db)` to obtain index lists before indexing `offsets`. This is functionally equivalent but means `db` must be a true `%t`/`%f` boolean vector — a numeric `0`/`1` vector returned from a custom `fun` may behave correctly under `find()`'s automatic coercion, but this has not been exhaustively verified for all numeric edge cases.
-
-* **`sparse()` call signature differs from Octave.** Octave builds the result with `S = sparse(res(:,1), res(:,2), res(:,3), size(I,1), size(I,2))` (separate row/column/value vectors). Scilab's `sparse()` instead takes a combined `[row col]` index matrix, a value vector, and a `[rows cols]` size vector: `S = sparse(x, v, [size(I,1), size(I,2)])`. The two calls are equivalent in effect but not in argument layout.
-
-* **`rem()` replaced by `modulo()`.** Both divisibility checks (`maxdim` pre-split, and the odd/even check on `curr_size` inside the main loop) use Scilab's `modulo()` in place of Octave's `rem()`. For the non-negative integer sizes involved here, the two functions agree, but they are not interchangeable in general (they differ in sign handling for negative operands).
-
-* **Threshold rescaling is type-driven, not range-driven.** The threshold is multiplied by `255` or `65535` purely based on `typeof(I)` being `"uint8"` or `"uint16"`; a `double`-typed image holding integer pixel values in `[0,255]` (e.g. loaded but not cast to `uint8`) will **not** receive this rescaling, and the threshold will be interpreted directly against the raw pixel values instead.
-
-* **No explicit validation of `fun`'s return type or size.** If a custom decision function returns a vector of the wrong length (not matching the number of candidate blocks `N`), or a non-boolean type that `find()` cannot meaningfully interpret, the error surfaced will come from a downstream indexing failure rather than a descriptive message from `qtdecomp` itself.
-
-* **`varargin(:)` forwarding to `fun`.** Extra arguments beyond `p1` and `dims` are collected into `varargin` and forwarded to `fun` as `fun(b, varargin(:))`, i.e. as a single list-valued argument, rather than Octave's `feval(fun, b, varargin{:})` argument-splatting. A `fun` written expecting separately-named extra arguments (rather than a single collected list) will need to be adapted.
-
----
-
-### Recommended Usage
-
-```scilab
-// Default: split until every block is internally uniform
-S = qtdecomp(I);
-
-// Threshold-based: split until every block's intensity range is within 10
-S = qtdecomp(I, 10);
-
-// Threshold-based, with explicit size bounds
-S = qtdecomp(I, 10, [2 64]);
-
-// Custom decision rule (e.g. based on variance, entropy, edge content, etc.)
-function db = myrule(b, varargin)
-    n = size(b, 3);
-    db = zeros(1, n);
-    for k = 1:n
-        db(k) = (stdev(b(:,:,k)) > 3);
-    end
-endfunction
-S = qtdecomp(I, myrule);
-
-// Retrieve the actual block contents afterward
-[vals, r, c] = qtgetblk(I, S, 4);
-```
-
-* Use the default (no second argument) only on already-segmented or label-style images where exact uniformity is meaningful; for natural images, a numeric `threshold` or custom `fun` is almost always more useful.
-* When working with `uint8`/`uint16` images, remember that a numeric `threshold` is automatically rescaled to the image's native range — pass `threshold` as a fraction of full-scale (e.g. in `[0,1]`) if this is the behavior you want, or be aware of the rescaling if you intended an absolute pixel-value threshold.
-* Always pair `qtdecomp` with `qtgetblk` to retrieve the actual pixel content of the blocks it identifies; `S` on its own only encodes positions and sizes, not pixel values.
-* If you need a guaranteed maximum block size regardless of how uniform the image is, supply `[mindim maxdim]` explicitly rather than relying on the decision rule alone to produce small enough blocks.
-
----
-
-## References
-
-[1] GNU Octave Image Package Documentation — `qtdecomp`.
-
-[2] MATLAB Image Processing Toolbox Documentation — `qtdecomp`, `qtgetblk`.
-
-[3] S. L. Tanimoto, T. Pavlidis, "A hierarchical data structure for picture processing," *Computer Graphics and Image Processing*, 1975. (Foundational reference for quadtree image representations.)
+## Parameters
+`I` - A 2-D square image to decompose (any numeric class; `uint8`/`uint16` receive special threshold scaling).
+
+`p1` - (Optional) Either a numeric splitting threshold, or a function handle / inline function used as a custom split decision. If omitted, blocks are split until every remaining block is uniform (all pixels equal).
+
+`varargin(1)` (`dims`) - (Optional, threshold mode only) Either a single value `mindim`, or a two-element vector `[mindim maxdim]` bounding the allowed block sizes. Defaults to `mindim = 1`, `maxdim = size(I,1)`.
+
+`varargin(2:)` - (Optional, function-handle mode only) Additional arguments forwarded to `fun` on every call.
+
+`S` - Output. Quadtree decomposition sparse matrix, same size as `I`. `S(r,c) = d` marks `(r,c)` as the top-left corner of a final `d×d` block; all other entries are `0`.
+# Examples
+## 1 — 1×1 Image
+      I = 1;
+      S = full(qtdecomp(I))
+##
+      A valid decomposition matrix is returned; no subdivision occurs, and the single pixel is represented as one block.
+## 2 — Odd-Sized Identity Matrix (5×5)
+      I = eye(5,5);
+      S = full(qtdecomp(I))
+##
+      Decomposition succeeds without errors; internal padding is handled automatically, and blocks containing diagonal transitions may be subdivided.
+## 3 — Even-Sized Identity Matrix (6×6)
+      I = eye(6,6);
+      S = full(qtdecomp(I))
+##
+      Successful decomposition; internal resizing or padding is handled automatically, and non-uniform regions are subdivided.
+## 4 — Power-of-Two Identity Matrix (8×8)
+      I = eye(8,8);
+      S = full(qtdecomp(I))
+##
+      No padding is required; regions intersecting the diagonal are subdivided while uniform regions remain large blocks.
+## 5 — Near-Uniform Image
+      I = ones(8,8);
+      I(4:5,4:5) = 3;
+      S = full(qtdecomp(I))
+##
+      Most of the image remains a large block; the altered central region triggers local subdivision concentrated near the intensity change.
+## 6 — Uniform Zero Image
+      I = zeros(8,8);
+      S = full(qtdecomp(I))
+##
+      A single large block represents the image; no recursive splitting occurs.
+## 7 — Checkerboard Pattern
+      I = [
+      0 1 0 1;
+      1 0 1 0;
+      0 1 0 1;
+      1 0 1 0
+      ];
+      S = full(qtdecomp(I))
+##
+      Extensive subdivision occurs; many blocks reach the minimum allowable size, preserving fine image detail.
+## 8 — Threshold = 0
+      I = [
+      1 1 1 1;
+      1 1 1 1;
+      1 1 2 2;
+      1 1 2 2
+      ];
+      S = full(qtdecomp(I,0))
+##
+      Any intensity variation triggers subdivision; mixed-value regions are recursively split, and only perfectly uniform blocks remain unsplit.
+## 9 — Threshold = 1
+      I = [
+      1 1 1 1;
+      1 1 1 1;
+      1 1 2 2;
+      1 1 2 2
+      ];
+      S = full(qtdecomp(I,1))
+##
+      Fewer subdivisions compared with Test Case 8; regions differing by at most one intensity level may remain unsplit.
+## 10 — Minimum Block Size Restriction
+      S = full(qtdecomp(I, 0, 4))
+##
+      No block smaller than 4×4 is generated; recursive subdivision stops at the specified limit.
+## 11 — Minimum and Maximum Block Size Constraints
+      S = full(qtdecomp(I, 0, [2 4]))
+##
+      All generated blocks have dimensions between 2 and 4; blocks larger than 4 are forced to split, and blocks smaller than 2 are not produced.
+## 12 — Regression Matrix A
+      S = full(qtdecomp(A))
+##
+      Mixed regions are subdivided; homogeneous regions remain intact, consistent with Octave behavior.
+## 13 — Regression Matrix A with Threshold = 5
+      S = full(qtdecomp(A,5))
+##
+      Fewer subdivisions than the default configuration; small variations within blocks are tolerated.
+## 14 — Regression Matrix A with Threshold = 10
+      S = full(qtdecomp(A,10))
+##
+      Significantly fewer blocks than Tests 12 and 13; larger image regions remain unsplit.
+## 15 — Function Handle Criterion
+      function y = first_eq(B, varargin)
+          y = squeeze(B(1,1,:) <> 54);
+          y = y(:);
+      endfunction
+      S = full(qtdecomp(A, first_eq))
+##
+      Splitting decisions follow the custom function; blocks whose first element differs from 54 are subdivided, bypassing standard threshold logic.
+## 16 — Non-Square Image (Invalid Input)
+      I = rand(4,5);
+      qtdecomp(I)
+##
+      Error : the image must be square.
+## 17 — Invalid Dimension Limits (Invalid Input)
+      I = eye(8,8);
+      qtdecomp(I,0,[4 2])
+##
+      Error : the minimum block size cannot exceed the maximum block size.
+## 18 — Large Uniform Image
+      I = ones(64,64);
+      S = full(qtdecomp(I))
+##
+      Minimal decomposition occurs; the image is represented using a single large block, and execution remains efficient.
+## 19 — Unsigned Integer Image
+      I = uint8(ones(4,4)*10);
+      S = full(qtdecomp(I, 0.1))
+##
+      Integer image types are accepted; decomposition behaves consistently with floating-point inputs, and no unnecessary splitting occurs.
+## 20 — Sparse Output Structure
+      I = [
+      1 1 2 2;
+      1 1 2 2;
+      3 3 4 4;
+      3 3 4 4
+      ];
+      S = qtdecomp(I);
+      disp(typeof(S))
+##
+      The output object is sparse; converting to full format correctly reconstructs the decomposition matrix.
