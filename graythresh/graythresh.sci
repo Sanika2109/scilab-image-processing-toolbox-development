@@ -610,41 +610,21 @@ function T = concavity(h)
 
 endfunction
 
-//Helper functions
 
-//isnumeric function
-function tf = isnumeric(x)
-    tf = or(type(x) == [1 5 8]);
-endfunction
-
-//isfloat function
-function tf = isfloat(x)
-    tf = (type(x) == 1);
-endfunction
-
-//numel function
-function n = numel(x)
-    n = size(x, "*");
-endfunction
-
-//partial_sumA
 function x = partial_sumA (y, j)
   x = sum (y(1:j+1));
 endfunction
 
-//partial_sumB
 function x = partial_sumB (y, j)
   ind = 0:j;
   x = ind*y(1:j+1)';
 endfunction
 
-//partial_sumC
 function x = partial_sumC (y, j)
   ind = 0:j;
   x = ind.^2*y(1:j+1)';
 endfunction
 
-//partial_sumD
 function x = partial_sumD (y, j)
   ind = 0:j;
   x = ind.^3*y(1:j+1)';
@@ -774,4 +754,22 @@ function x = negativeE(y, j)
 
     x = sum(y .* log10(y));
 
+endfunction
+
+
+//Helper functions
+
+//isnumeric function
+function tf = isnumeric(x)
+    tf = or(type(x) == [1 5 8]);
+endfunction
+
+//isfloat function
+function tf = isfloat(x)
+    tf = (type(x) == 1);
+endfunction
+
+//numel function
+function n = numel(x)
+    n = size(x, "*");
 endfunction
