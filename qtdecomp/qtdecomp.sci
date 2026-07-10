@@ -1,9 +1,9 @@
 function S = qtdecomp(I, p1, varargin)
 
-  rhs = argn(2); 
+  nargin = argn(2);
 
   // Validate input image and number of arguments
-  if (rhs < 1) then
+  if (nargin < 1) then
     error("qtdecomp: invalid number of arguments");
   elseif (~issquare(I)) then
     error("qtdecomp: I should be square.");
@@ -15,7 +15,7 @@ function S = qtdecomp(I, p1, varargin)
   mindim = 1;
   maxdim = curr_size;
 
-  if (rhs < 2) then
+  if (nargin < 2) then
 
     // Default mode: split blocks until all pixels within a block are equal
     decision_method = 0;
@@ -23,6 +23,7 @@ function S = qtdecomp(I, p1, varargin)
   elseif (typeof(p1) == "function" | typeof(p1) == "function handle" | typeof(p1) == "inline function" | typeof(p1) == "fptr") then
 
     // User-defined block splitting function
+ 
     fun = p1;
     decision_method = 2;
 
@@ -32,18 +33,18 @@ function S = qtdecomp(I, p1, varargin)
     threshold = p1;
     decision_method = 1;
 
-    if (typeof(I) == "uint8") then 
+    if (typeof(I) == "uint8") then
       threshold = threshold * 255;
-      
+
     elseif (typeof(I) == "uint16") then
       threshold = threshold * 65535;
     end
 
-    if (rhs > 3) then
+    if (nargin > 3) then
 
       error("qtdecomp: invalid arguments");
 
-    elseif (rhs == 3) then
+    elseif (nargin == 3) then
 
       dims = varargin(1);
 
@@ -83,7 +84,7 @@ function S = qtdecomp(I, p1, varargin)
   if (maxdim < mindim) then
     error("qtdecomp: mindim must be smaller than maxdim.");
   end
-  
+
   if (maxdim < curr_size) then
 
     // Force initial subdivision until block size satisfies maxdim
@@ -119,7 +120,7 @@ function S = qtdecomp(I, p1, varargin)
 
     // Stop splitting if blocks cannot be halved further
     if ((modulo(curr_size,2) <> 0) | ((curr_size / 2) < mindim)) then
-      
+
       res = [res; offsets, ones(size(offsets,1),1) * curr_size];
 
       finished = %t;
@@ -138,11 +139,9 @@ function S = qtdecomp(I, p1, varargin)
 
           if (decision_method == 0) then
 
-            blk = I(o(1):fo(1), o(2):fo(2));
-
-            // Split only if block contains different values
-            if max(blk) == min(blk) then
-               db(r) = %f;
+            // is everything equal?
+            if (and(I(o(1),o(2)) == I(o(1):fo(1), o(2):fo(2)))) then
+               db(r) = 0;
             end
 
           else
@@ -152,7 +151,7 @@ function S = qtdecomp(I, p1, varargin)
 
             // Split if intensity range exceeds threshold
             if ((max(t) - min(t)) <= threshold) then
-              db(r) = %f;
+              db(r) = 0;
             end
 
           end
@@ -213,5 +212,5 @@ function S = qtdecomp(I, p1, varargin)
   v = res(:,3);
 
   S = sparse(x, v, [size(I,1), size(I,2)]);
-  
+
 endfunction
