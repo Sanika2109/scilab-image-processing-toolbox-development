@@ -27,7 +27,7 @@ function varargout = graythresh(img, algo, varargin)
          // Convert RGB image to grayscale if needed
         img = rgb2gray(img);
 
-    elseif isfloat(img) & isvector(img) & ~issparse(img) & ...
+    elseif isfloat(img) & isvector(img) & ~issparse(img) & ..
            isreal(img) & and(img >= 0) then
         // If input is already histogram-like vector
         hist_in = %t;
@@ -58,7 +58,7 @@ function varargout = graythresh(img, algo, varargin)
 
     // Build histogram
         
-        nbins = intmax(typeof(img)) + 1;
+        nbins = double(intmax(typeof(img))) + 1;
         ihist = zeros(1, nbins);
 
         pixels = double(img(:));
@@ -76,7 +76,7 @@ function varargout = graythresh(img, algo, varargin)
             thresh = concavity(ihist);
 
         case "intermeans" then
-            thresh = intermeans(ihist, floor(mean(double(img(:)))));
+            thresh = intermeans(ihist, double(floor(mean(double(img(:))))));
 
         case "intermodes" then
             thresh = intermodes(ihist);
@@ -88,7 +88,7 @@ function varargout = graythresh(img, algo, varargin)
             thresh = maxlikelihood(ihist);
 
         case "minerror" then
-            thresh = minerror_iter(ihist, floor(mean(double(img(:)))));
+            thresh = minerror_iter(ihist, double(floor(mean(double(img(:))))));
 
         case "minimum" then
             thresh = minimum(ihist);
@@ -234,9 +234,9 @@ function T = maxentropy(y)
 
         sum_diff = sumY - sumA;
 
-        vec(j + 1) = negE / sumA ...
-                   - log10(sumA) ...
-                   + (negY - negE) / sum_diff ...
+        vec(j + 1) = negE / sumA ..
+                   - log10(sumA) ..
+                   + (negY - negE) / sum_diff ..
                    - log10(sum_diff);
 
     end
@@ -392,6 +392,11 @@ function Tout = minerror_iter(y, T)
         
         // Right class statistics (> T)
         sumAdiff = sumA - sumAT;
+
+        // Guard against division by zero (empty class)
+        if sumAT == 0 | sumAdiff == 0 then
+            break;
+        end
         
         // Mean of both classes
         mu = sumBT / sumAT;
@@ -405,10 +410,15 @@ function Tout = minerror_iter(y, T)
         sigma2 = sumCT / sumAT - mu^2;
         tau2   = (sumC - sumCT) / sumAdiff - nu^2;
 
+        // Guard against zero or negative variance
+        if sigma2 <= 0 | tau2 <= 0 then
+            break;
+        end
+
         // Quadratic equation parameters for threshold update
         w0 = 1 / sigma2 - 1 / tau2;
         w1 = mu / sigma2 - nu / tau2;
-        w2 = mu^2 / sigma2 - nu^2 / tau2 ...
+        w2 = mu^2 / sigma2 - nu^2 / tau2 ..
            + log10((sigma2 * q^2) / (tau2 * p^2));
 
        // Check if solution becomes invalid (complex root)
@@ -421,7 +431,10 @@ function Tout = minerror_iter(y, T)
 
          // Update threshold using quadratic solution
         Tprev = T;
-        T = floor((w1 + sqrt(sqterm)) / w0);
+        T = double(floor((w1 + sqrt(sqterm)) / w0));
+
+        // Clamp T to valid histogram range
+        T = max(0, min(T, n));
 
         // Check for invalid result
         if isnan(T) then
@@ -488,10 +501,10 @@ function Tout = maxlikelihood(y)
         for i = 0:n
 
             // Posterior probability of class 1
-            phi(i + 1) = ...
-                (p / sqrt(sigma2)) * exp(-((i - mu)^2) / (2 * sigma2)) ...
-                / ...
-                ((p / sqrt(sigma2)) * exp(-((i - mu)^2) / (2 * sigma2)) + ...
+            phi(i + 1) = ..
+                (p / sqrt(sigma2)) * exp(-((i - mu)^2) / (2 * sigma2)) ..
+                / ..
+                ((p / sqrt(sigma2)) * exp(-((i - mu)^2) / (2 * sigma2)) + ..
                  (q / sqrt(tau2))  * exp(-((i - nu)^2) / (2 * tau2)));
 
         end
@@ -514,11 +527,11 @@ function Tout = maxlikelihood(y)
         tau2   = ((ind.^2) .* gamma) * y' / G - nu^2;
 
         // Convergence check
-        if abs(mu - mu_prev) <= %eps | ...
-           abs(nu - nu_prev) <= %eps | ...
-           abs(p - p_prev) <= %eps | ...
-           abs(q - q_prev) <= %eps | ...
-           abs(sigma2 - sigma2_prev) <= %eps | ...
+        if abs(mu - mu_prev) <= %eps | ..
+           abs(nu - nu_prev) <= %eps | ..
+           abs(p - p_prev) <= %eps | ..
+           abs(q - q_prev) <= %eps | ..
+           abs(sigma2 - sigma2_prev) <= %eps | ..
            abs(tau2 - tau2_prev) <= %eps then
             break;
         end
@@ -529,8 +542,8 @@ function Tout = maxlikelihood(y)
     w0 = 1 / sigma2 - 1 / tau2;
     w1 = mu / sigma2 - nu / tau2;
 
-    w2 = mu^2 / sigma2 ...
-       - nu^2 / tau2 ...
+    w2 = mu^2 / sigma2 ..
+       - nu^2 / tau2 ..
        + log10((sigma2 * q^2) / (tau2 * p^2));
 
     // If threshold would be imaginary
@@ -561,10 +574,17 @@ function Tout = intermeans(y, T)
     sumB = partial_sumB(y, n);
 
     // Iteratively update threshold 
-    while T <> Tprev
+    while double(T) <> double(Tprev)
 
         sumAT = partial_sumA(y, T);
         sumBT = partial_sumB(y, T);
+
+        // Guard against an empty class (all pixels on one side of T),
+        // which would otherwise divide by zero and send T to nan/inf,
+        // crashing the next call to partial_sumA.
+        if sumAT == 0 | (sumY - sumAT) == 0 then
+            break
+        end
 
         mu = sumBT / sumAT;
         nu = (sumB - sumBT) / (sumY - sumAT);
@@ -572,7 +592,7 @@ function Tout = intermeans(y, T)
         Tprev = T;
         
         // New threshold is midpoint of class means
-        T = floor((mu + nu) / 2);
+        T = double(floor((mu + nu) / 2));
 
     end
 
@@ -612,20 +632,24 @@ endfunction
 
 
 function x = partial_sumA (y, j)
+  j = double(j);
   x = sum (y(1:j+1));
 endfunction
 
 function x = partial_sumB (y, j)
+  j = double(j);
   ind = 0:j;
   x = ind*y(1:j+1)';
 endfunction
 
 function x = partial_sumC (y, j)
+  j = double(j);
   ind = 0:j;
   x = ind.^2*y(1:j+1)';
 endfunction
 
 function x = partial_sumD (y, j)
+  j = double(j);
   ind = 0:j;
   x = ind.^3*y(1:j+1)';
 endfunction
@@ -638,7 +662,7 @@ function b = bimodtest(y)
 
 // Count local maxima; reject if more than 2 modes
   for k = 2:len-1
-    if y(k-1) < y(k) && y(k+1) < y(k)
+    if y(k-1) < y(k) & y(k+1) < y(k)
       modes = modes+1;
       if modes > 2
         return
@@ -733,10 +757,10 @@ function H = hconvhull(h)
     // Linear interpolation between hull points
     for i = 2:length(K)
 
-        H(K(i - 1):K(i)) = ...
-            h(K(i - 1)) ...
-          + (h(K(i)) - h(K(i - 1))) ...
-          / (K(i) - K(i - 1)) ...
+        H(K(i - 1):K(i)) = ..
+            h(K(i - 1)) ..
+          + (h(K(i)) - h(K(i - 1))) ..
+          / (K(i) - K(i - 1)) ..
           * (0:(K(i) - K(i - 1)));
 
     end
