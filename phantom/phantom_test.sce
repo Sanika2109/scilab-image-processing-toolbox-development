@@ -6,6 +6,9 @@ exec(base + "phantom.sci", -1);
 //--------------------------------------------------
 disp("TEST 1 : Default Phantom");
 
+disp("Input:");
+disp("phantom()");
+
 [head,E] = phantom();
 
 disp("Image Size:");
@@ -26,17 +29,19 @@ mprintf("\n");
 // TEST 2 : Small Image (N = 8)
 //--------------------------------------------------
 disp("TEST 2 : Small Image (N = 8)");
-
+disp("Input:");
+disp("N = 8");
 head = phantom(8);
-
 disp("Image Size:");
 disp(size(head));
-
 disp("Image Sum:");
 disp(sum(head));
-
 disp("Output:");
 disp(head);
+
+figure();
+imshow(head);
+title("TEST 2 : Small Image (N = 8)");
 
 mprintf("\n");
 
@@ -48,6 +53,12 @@ disp("TEST 3 : 90 Degree Rotation");
 E = [
 1 0.55 0.20 0 0 90
 ];
+
+disp("Input:");
+disp("Ellipse Matrix E:");
+disp(E);
+disp("Image Size:");
+disp(128);
 
 [head,ell] = phantom(E,128);
 
@@ -69,6 +80,9 @@ mprintf("\n");
 // TEST 4 : Shepp-Logan Phantom
 //--------------------------------------------------
 disp("TEST 4 : Shepp-Logan Phantom");
+
+disp("Input:");
+disp("Model = ""shepp-logan""");
 
 [head,E] = phantom("shepp-logan");
 
@@ -95,6 +109,12 @@ E = [
 -0.8 0.40 0.30 0 0 0
 ];
 
+disp("Input:");
+disp("Ellipse Matrix E:");
+disp(E);
+disp("Image Size:");
+disp(128);
+
 [head,ell] = phantom(E,128);
 
 disp("Image Size:");
@@ -120,6 +140,12 @@ E = [
 1 0.40 0.30 0.80 0 0
 ];
 
+disp("Input:");
+disp("Ellipse Matrix E:");
+disp(E);
+disp("Image Size:");
+disp(128);
+
 [head,ell] = phantom(E,128);
 
 disp("Image Size:");
@@ -143,6 +169,12 @@ E = [
 -0.5   0.20 0.10  0.30 -0.20 -45
 ];
 
+disp("Input:");
+disp("Ellipse Matrix E:");
+disp(E);
+disp("Image Size:");
+disp(256);
+
 [head,ell] = phantom(E,256);
 
 disp("Image Size:");
@@ -165,6 +197,12 @@ E = [
 1.0 0.40 0.40 0 0 0
 0.7 0.40 0.40 0 0 0
 ];
+
+disp("Input:");
+disp("Ellipse Matrix E:");
+disp(E);
+disp("Image Size:");
+disp(101);
 
 [head,ell] = phantom(E,101);
 
@@ -191,6 +229,12 @@ E = [
 1.0 0.20 0.20 3 3 0
 ];
 
+disp("Input:");
+disp("Ellipse Matrix E:");
+disp(E);
+disp("Image Size:");
+disp(128);
+
 [head,ell] = phantom(E,128);
 
 disp("Image Size:");
@@ -212,6 +256,9 @@ disp("TEST 10 : Invalid Inputs");
 //--------------------------------------------------
 disp("Case 1 : Invalid Model");
 
+disp("Input:");
+disp("Model = ""brain""");
+
 disp("Status:");
 try
     phantom("brain");
@@ -225,6 +272,10 @@ mprintf("\n");
 
 //--------------------------------------------------
 disp("Case 2 : Invalid Ellipse Matrix");
+
+disp("Input:");
+disp("Random 4x5 Matrix:");
+disp(rand(4,5));
 
 disp("Status:");
 try
@@ -240,6 +291,9 @@ mprintf("\n");
 //--------------------------------------------------
 disp("Case 3 : Invalid Numeric Input");
 
+disp("Input:");
+disp(64.5);
+
 disp("Status:");
 try
     phantom(64.5);
@@ -254,6 +308,10 @@ mprintf("\n");
 //--------------------------------------------------
 disp("Case 4 : Invalid Second Argument");
 
+disp("Input:");
+disp("Model = ""shepp-logan""");
+disp("Second Argument = ""abc""");
+
 disp("Status:");
 try
     phantom("shepp-logan","abc");
@@ -267,6 +325,9 @@ mprintf("\n");
 
 //--------------------------------------------------
 disp("Case 5 : Too Many Inputs");
+
+disp("Input:");
+disp("[64, 64, 64]");
 
 disp("Status:");
 try
