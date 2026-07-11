@@ -36,6 +36,11 @@ The function depends on the following external files, which must be loaded befor
 
 # Examples
 
+Before running the examples that use randomly generated data, initialize the random number generators to obtain reproducible results.
+
+      grand("setsd", 123456789);
+      rand("seed", 123456789);
+
 ## 1 — Otsu Thresholding on Bimodal Image
       img = uint8([zeros(50,50) 255*ones(50,50)]);
       [level, goodness] = graythresh(img)
@@ -50,7 +55,7 @@ The function depends on the following external files, which must be loaded befor
       ]);
       out = graythresh(img, "mean")
 ##
-      0.5070000
+      0.5114902
 
 ## 3 — Intermeans Thresholding
       img = uint8([
@@ -59,7 +64,7 @@ The function depends on the following external files, which must be loaded befor
       ]);
       out = graythresh(img, "intermeans")
 ##
-      0.4901961
+      0.4862745
 
 ## 4 — Intermodes Thresholding
       img = uint8([
@@ -68,7 +73,7 @@ The function depends on the following external files, which must be loaded befor
       ]);
       out = graythresh(img, "intermodes")
 ##
-      0.5098039
+       0.5098039
 
 ## 5 — Maximum Entropy Thresholding
       img = uint8([
@@ -86,7 +91,7 @@ The function depends on the following external files, which must be loaded befor
       ]);
       out = graythresh(img, "maxlikelihood")
 ##
-      0.5137255
+      0.5098039
 
 ## 7 — Minimum Method
       img = uint8([
@@ -95,7 +100,7 @@ The function depends on the following external files, which must be loaded befor
       ]);
       out = graythresh(img, "minimum")
 ##
-      0.2627451
+      0.2470588
 
 ## 8 — Minimum Error Thresholding
       img = uint8([
@@ -110,7 +115,7 @@ The function depends on the following external files, which must be loaded befor
       img = uint8(grand(128,128,"uin",0,255));
       out = graythresh(img, "moments")
 ##
-      0.5019608
+      0.4941176
 
 ## 10 — Concavity Thresholding
       img = uint8([
@@ -120,7 +125,7 @@ The function depends on the following external files, which must be loaded befor
       ]);
       out = graythresh(img, "concavity")
 ##
-      0.5411765
+      0.5490196
 
 ## 11 — Percentile Thresholding (p = 0.5)
       img = uint8([
@@ -129,7 +134,7 @@ The function depends on the following external files, which must be loaded befor
       ]);
       out = graythresh(img, "percentile", 0.5)
 ##
-      0.3019608
+      0.3137255
 
 ## 12 — Percentile Thresholding (p = 0.25)
       img = uint8([
@@ -138,7 +143,7 @@ The function depends on the following external files, which must be loaded befor
       ]);
       out = graythresh(img, "percentile", 0.25)
 ##
-      0.1098039
+      0.1215686
 
 ## 13 — Percentile Thresholding (p = 0.75)
       img = uint8([
@@ -179,4 +184,4 @@ The function depends on the following external files, which must be loaded befor
       img = rand(100,100);
       out = graythresh(img)
 ##
-      0.4980392
+      0.4941176
