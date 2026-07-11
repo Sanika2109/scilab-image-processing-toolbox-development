@@ -12,8 +12,10 @@ exec(base + "graythresh.sci", -1);
 disp("TEST 1 : OTSU - Bimodal Image");
 img = uint8([zeros(50,50) 255*ones(50,50)]);
 [level, goodness] = graythresh(img);
-disp("Level: ", level);
-disp("Goodness metric: ", goodness);
+disp("Level: ");
+disp(level);
+disp("Goodness metric: ");
+disp(goodness);
 //--------------------------------------------------
 // Test 2 : Mean algorithm
 //--------------------------------------------------
