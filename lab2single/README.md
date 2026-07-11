@@ -12,19 +12,29 @@ The function depends on the following external file, which must be loaded before
 | File | Purpose |
 |--------|---------|
 | `lab2cls.sci` | Converts L*a*b* data to the specified output class. |
+
 ## Parameters
 `lab` - An L*a*b* image, colormap, or image stack (M×3, M×N×3, or M×N×3×K). May be `uint8`, `uint16`, or `constant` (double).
 
 `lab_single` - Output. Floating-point representation of the L*a*b* data, returned as a Scilab `constant` matrix.
+
 # Examples
+
 ## 1 — Real LAB Image from rgb2lab
       rgb = imread("dog.jpg");
       lab = rgb2lab(rgb);
       out = lab2single(lab);
+
+      typeof(lab)
       typeof(out)
+      size(out)
 ##
+      uint8
       constant
-      Output size matches the input image dimensions (M×N×3).
+      2149   3224   3
+
+      Converts the uint8 LAB image returned by `rgb2lab` to a floating-point LAB image while preserving the image dimensions.
+
 ## 2 — uint8 LAB Colormap
       lab = uint8([
           255 128 128;
@@ -32,7 +42,17 @@ The function depends on the following external file, which must be loaded before
       ]);
       out = lab2single(lab)
 ##
-      Returns a floating-point (constant) L*a*b* colormap of the same size as the input.
+      Input type:
+      uint8
+
+      Output type:
+      constant
+
+      100   0   0
+        0   0   0
+
+      Converts a uint8-encoded LAB colormap to floating-point LAB values.
+
 ## 3 — uint16 LAB Colormap
       lab = uint16([
           65280 32768 32768;
@@ -40,7 +60,17 @@ The function depends on the following external file, which must be loaded before
       ]);
       out = lab2single(lab)
 ##
-      Returns a floating-point (constant) L*a*b* colormap obtained from uint16 encoding.
+      Input type:
+      uint16
+
+      Output type:
+      constant
+
+      100   0   0
+        0   0   0
+
+      Converts a uint16-encoded LAB colormap to floating-point LAB values.
+
 ## 4 — Double LAB Colormap
       lab = [
           50 10 -10;
@@ -48,7 +78,17 @@ The function depends on the following external file, which must be loaded before
       ];
       out = lab2single(lab)
 ##
-      Returns equivalent floating-point values without modifying the LAB representation.
+      Input type:
+      constant
+
+      Output type:
+      constant
+
+      50   10  -10
+      75   20   30
+
+      Floating-point LAB values are returned unchanged.
+
 ## 5 — uint8 M×N×3 LAB Image
       lab = cat(3, ...
                 uint8([0 128;255 64]), ...
@@ -56,7 +96,29 @@ The function depends on the following external file, which must be loaded before
                 uint8([128 118;168 108]));
       out = lab2single(lab)
 ##
-      Returns a floating-point LAB image obtained from uint8 encoding, with dimensions preserved.
+      Input type:
+      uint8
+
+      Output type:
+      constant
+
+      (:,:,1)
+
+         0.000000   50.196078
+       100.000000   25.098039
+
+      (:,:,2)
+
+         0.   10.
+        20.   30.
+
+      (:,:,3)
+
+         0.  -10.
+        40.  -20.
+
+      Converts a uint8 LAB image to floating-point LAB while preserving the image dimensions.
+
 ## 6 — uint16 M×N×3 LAB Image
       lab = cat(3, ...
                 uint16([0 32640;65280 16320]), ...
@@ -64,25 +126,73 @@ The function depends on the following external file, which must be loaded before
                 uint16([32640 30000;45000 60000]));
       out = lab2single(lab)
 ##
-      Returns a floating-point LAB image obtained from uint16 encoding, with dimensions preserved.
+      Input type:
+      uint16
+
+      Output type:
+      constant
+
+      (:,:,1)
+
+         0.    50.
+       100.    25.
+
+      (:,:,2)
+
+        -0.5      28.25
+       -49.875    67.3125
+
+      (:,:,3)
+
+        -0.5      -10.8125
+        47.78125  106.375
+
+      Converts a uint16 LAB image to floating-point LAB while preserving the image dimensions.
+
 ## 7 — 4-D LAB Image (Batch Processing)
       lab = rand(2,2,3,2);
       lab(:,:,1,:) = lab(:,:,1,:) * 100;
       lab(:,:,2,:) = lab(:,:,2,:) * 255 - 128;
       lab(:,:,3,:) = lab(:,:,3,:) * 255 - 128;
-      out = lab2single(lab)
+      out = lab2single(lab);
+
+      size(lab)
+      size(out)
 ##
-      Returns a floating-point LAB image stack with input dimensions (2×2×3×2) preserved.
+      Input type:
+      constant
+
+      Output type:
+      constant
+
+      Input size:
+      2   2   3   2
+
+      Output size:
+      2   2   3   2
+
+      Floating-point 4-D LAB image stacks are returned with their dimensions preserved.
+
 ## 8 — Invalid Dimensions
       lab = rand(3,4);
       out = lab2single(lab)
 ##
-      Error : LAB must be M×3, M×N×3, or M×N×3×K.
+      Input type:
+      constant
+
+      Error:
+      lab2: LAB must be Mx3, MxNx3, or MxNx3xK size
+
 ## 9 — Invalid Input Type
       lab = "hello";
       out = lab2single(lab)
 ##
-      Error : LAB must be Mx3, MxNx3, or MxNx3xK size.
+      Input type:
+      string
+
+      Error:
+      lab2: LAB must be Mx3, MxNx3, or MxNx3xK size
+
 ## 10 — NaN and Inf Handling
       lab = cat(3, ...
                 [%nan 50; %inf -50], ...
@@ -90,4 +200,44 @@ The function depends on the following external file, which must be loaded before
                 [0 30; -30 %inf]);
       out = lab2single(lab)
 ##
-      NaN and Inf values are passed through the conversion; behavior depends on the handling implemented in lab2cls().
+      Input type:
+      constant
+
+      Output type:
+      constant
+
+      Input:
+
+      (:,:,1)
+
+         Nan   50.
+         Inf  -50.
+
+      (:,:,2)
+
+         0.   -Inf
+         Nan   40.
+
+      (:,:,3)
+
+         0.    30.
+       -30.    Inf
+
+      Output:
+
+      (:,:,1)
+
+         Nan   50.
+         Inf  -50.
+
+      (:,:,2)
+
+         0.   -Inf
+         Nan   40.
+
+      (:,:,3)
+
+         0.    30.
+       -30.    Inf
+
+      NaN and Inf values are preserved during conversion.
