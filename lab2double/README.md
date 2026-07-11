@@ -319,4 +319,3 @@ The function depends on the following external file, which must be loaded before
       Error:
 
       lab2: invalid class for LAB
-```
