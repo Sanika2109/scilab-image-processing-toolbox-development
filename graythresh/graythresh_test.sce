@@ -1,6 +1,10 @@
 base = get_absolute_file_path("graythresh_test.sce");
-exec(base + "../intmax/intmax.sci", -1);
+exec(base + "../rgb2gray/rgb2gray.sci", -1);
+exec(base + "../im2double/im2double.sci", -1);
 exec(base + "../isa/isa.sci", -1);
+exec(base + "../im2uint16/im2uint16.sci", -1);
+exec(base + "../im2uint8/im2uint8.sci", -1);
+exec(base + "../intmax/intmax.sci", -1);
 exec(base + "graythresh.sci", -1);
 
 //--------------------------------------------------
