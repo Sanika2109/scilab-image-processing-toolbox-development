@@ -6,21 +6,24 @@ exec(base + "lab2uint8.sci", -1);
 DogImg = imread("dog.jpg");
 
 // ==================================================
-// Test 1: Real LAB Image 
+// Test 1: Floating-Point LAB Image
 // ==================================================
-disp("Test 1: Real LAB Image from rgb2lab");
+disp("Test 1: Floating-Point LAB Image");
 
-rgb = DogImg;
-lab = rgb2lab(rgb);
+lab = cat(3, ...
+          [0 25; 50 100], ...
+          [0 -20; 40 60], ...
+          [0 30; -40 80]);
 
 out = lab2uint8(lab);
-
-disp("Input type:"); disp(typeof(lab));
-disp("Output type:"); disp(typeof(out));
-disp("Output size:"); disp(size(out));
+disp("Input type:");
+disp(typeof(lab));
+disp("Output type:");
+disp(typeof(out));
+disp("Output size:");
+disp(size(out));
 
 mprintf("\n");
-
 
 // ==================================================
 // Test 2: Minimum valid double LAB
