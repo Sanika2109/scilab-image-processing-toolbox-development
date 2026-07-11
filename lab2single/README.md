@@ -33,8 +33,6 @@ The function depends on the following external file, which must be loaded before
       constant
       2149   3224   3
 
-      Converts the uint8 LAB image returned by `rgb2lab` to a floating-point LAB image while preserving the image dimensions.
-
 ## 2 — uint8 LAB Colormap
       lab = uint8([
           255 128 128;
@@ -50,8 +48,6 @@ The function depends on the following external file, which must be loaded before
 
       100   0   0
         0   0   0
-
-      Converts a uint8-encoded LAB colormap to floating-point LAB values.
 
 ## 3 — uint16 LAB Colormap
       lab = uint16([
@@ -69,8 +65,6 @@ The function depends on the following external file, which must be loaded before
       100   0   0
         0   0   0
 
-      Converts a uint16-encoded LAB colormap to floating-point LAB values.
-
 ## 4 — Double LAB Colormap
       lab = [
           50 10 -10;
@@ -86,8 +80,6 @@ The function depends on the following external file, which must be loaded before
 
       50   10  -10
       75   20   30
-
-      Floating-point LAB values are returned unchanged.
 
 ## 5 — uint8 M×N×3 LAB Image
       lab = cat(3, ...
@@ -117,8 +109,6 @@ The function depends on the following external file, which must be loaded before
          0.  -10.
         40.  -20.
 
-      Converts a uint8 LAB image to floating-point LAB while preserving the image dimensions.
-
 ## 6 — uint16 M×N×3 LAB Image
       lab = cat(3, ...
                 uint16([0 32640;65280 16320]), ...
@@ -147,8 +137,6 @@ The function depends on the following external file, which must be loaded before
         -0.5      -10.8125
         47.78125  106.375
 
-      Converts a uint16 LAB image to floating-point LAB while preserving the image dimensions.
-
 ## 7 — 4-D LAB Image (Batch Processing)
       lab = rand(2,2,3,2);
       lab(:,:,1,:) = lab(:,:,1,:) * 100;
@@ -170,8 +158,6 @@ The function depends on the following external file, which must be loaded before
 
       Output size:
       2   2   3   2
-
-      Floating-point 4-D LAB image stacks are returned with their dimensions preserved.
 
 ## 8 — Invalid Dimensions
       lab = rand(3,4);
@@ -239,5 +225,3 @@ The function depends on the following external file, which must be loaded before
 
          0.    30.
        -30.    Inf
-
-      NaN and Inf values are preserved during conversion.
