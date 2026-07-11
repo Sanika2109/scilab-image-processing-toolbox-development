@@ -20,8 +20,8 @@ function [varargout] = qtgetblk(I, S, dim)
       varargout(i) = [];
     end
   else
-    r = i(idx);
-    c = j(idx);
+    r = i(idx)';
+    c = j(idx)';
 
     // copy to a dim-by-dim-by-k array
     vals = zeros(dim, dim, length(idx));
