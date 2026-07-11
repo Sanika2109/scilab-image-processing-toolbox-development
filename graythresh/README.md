@@ -36,11 +36,6 @@ The function depends on the following external files, which must be loaded befor
 
 # Examples
 
-Before running the examples that use randomly generated data, initialize the random number generators to obtain reproducible results.
-
-      grand("setsd", 123456789);
-      rand("seed", 123456789);
-
 ## 1 — Otsu Thresholding on Bimodal Image
       img = uint8([zeros(50,50) 255*ones(50,50)]);
       [level, goodness] = graythresh(img)
@@ -49,107 +44,107 @@ Before running the examples that use randomly generated data, initialize the ran
       goodness = 1.
 
 ## 2 — Mean Thresholding
-      img = uint8([
-          grand(100,1,"uin",20,80);
-          grand(100,1,"uin",180,240)
-      ]);
+      img = uint8(round([
+          linspace(20, 80, 100)';
+          linspace(180, 240, 100)'
+      ]));
       out = graythresh(img, "mean")
 ##
-      0.5114902
+      0.5098039
 
 ## 3 — Intermeans Thresholding
-      img = uint8([
-          grand(100,1,"uin",20,70);
-          grand(100,1,"uin",180,230)
-      ]);
+      img = uint8(round([
+          linspace(20, 70, 100)';
+          linspace(180, 230, 100)'
+      ]));
       out = graythresh(img, "intermeans")
 ##
-      0.4862745
+      0.4901961
 
 ## 4 — Intermodes Thresholding
-      img = uint8([
-          10 + grand(100,1,"uin",0,5);
-          245 + grand(100,1,"uin",0,5)
-      ]);
+      img = uint8(round([
+          linspace(10, 15, 100)';
+          linspace(245, 250, 100)'
+      ]));
       out = graythresh(img, "intermodes")
 ##
-       0.5098039
+      0.5058824
 
 ## 5 — Maximum Entropy Thresholding
-      img = uint8([
-          30 + grand(100,1,"uin",0,20);
-          200 + grand(100,1,"uin",0,20)
-      ]);
+      img = uint8(round([
+          linspace(30, 50, 100)';
+          linspace(200, 220, 100)'
+      ]));
       out = graythresh(img, "maxentropy")
 ##
       0.1960784
 
 ## 6 — Maximum Likelihood Thresholding
-      img = uint8([
-          40 + grand(100,1,"uin",0,20);
-          200 + grand(100,1,"uin",0,20)
-      ]);
+      img = uint8(round([
+          linspace(40, 60, 100)';
+          linspace(200, 220, 100)'
+      ]));
       out = graythresh(img, "maxlikelihood")
 ##
-      0.5098039
+      Nan
 
 ## 7 — Minimum Method
-      img = uint8([
-          50 + grand(100,1,"uin",0,10);
-          220 + grand(100,1,"uin",0,10)
-      ]);
+      img = uint8(round([
+          linspace(50, 60, 100)';
+          linspace(220, 230, 100)'
+      ]));
       out = graythresh(img, "minimum")
 ##
-      0.2470588
+      0.2549020
 
 ## 8 — Minimum Error Thresholding
-      img = uint8([
-          30 + grand(100,1,"uin",0,15);
-          210 + grand(100,1,"uin",0,15)
-      ]);
+      img = uint8(round([
+          linspace(30, 45, 100)';
+          linspace(210, 225, 100)'
+      ]));
       out = graythresh(img, "minerror")
 ##
-      0.5058824
+      0.4980392
 
 ## 9 — Moments Thresholding
-      img = uint8(grand(128,128,"uin",0,255));
+      img = uint8(round(matrix(linspace(0, 255, 128*128), 128, 128)));
       out = graythresh(img, "moments")
 ##
-      0.4941176
+      0.4980392
 
 ## 10 — Concavity Thresholding
-      img = uint8([
-          20 + grand(120,1,"uin",0,25);
-          120 + grand(120,1,"uin",0,40);
-          220 + grand(120,1,"uin",0,15)
-      ]);
+      img = uint8(round([
+          linspace(20, 45, 120)';
+          linspace(120, 160, 120)';
+          linspace(220, 235, 120)'
+      ]));
       out = graythresh(img, "concavity")
 ##
       0.5490196
 
 ## 11 — Percentile Thresholding (p = 0.5)
-      img = uint8([
-          grand(150,1,"uin",10,80);
-          grand(150,1,"uin",180,240)
-      ]);
+      img = uint8(round([
+          linspace(10, 80, 150)';
+          linspace(180, 240, 150)'
+      ]));
       out = graythresh(img, "percentile", 0.5)
 ##
       0.3137255
 
 ## 12 — Percentile Thresholding (p = 0.25)
-      img = uint8([
-          grand(200,1,"uin",10,60);
-          grand(100,1,"uin",180,240)
-      ]);
+      img = uint8(round([
+          linspace(10, 60, 200)';
+          linspace(180, 240, 100)'
+      ]));
       out = graythresh(img, "percentile", 0.25)
 ##
-      0.1215686
+      0.1098039
 
 ## 13 — Percentile Thresholding (p = 0.75)
-      img = uint8([
-          grand(300,1,"uin",10,80);
-          grand(100,1,"uin",180,240)
-      ]);
+      img = uint8(round([
+          linspace(10, 80, 300)';
+          linspace(180, 240, 100)'
+      ]));
       out = graythresh(img, "percentile", 0.75)
 ##
       0.3137255
@@ -181,7 +176,8 @@ Before running the examples that use randomly generated data, initialize the ran
       0.4999924
 
 ## 18 — Double Precision Image
-      img = rand(100,100);
+      img = matrix(linspace(0, 1, 100*100), 100, 100);
       out = graythresh(img)
 ##
-      0.4941176
+      0.4980392
+```
